@@ -1,5 +1,5 @@
 {
-  "itemGroup.vision_tactical_eagleeye.main": "Vision Tactical: EagleEye & 드론",
+  "itemGroup.vision_tactical_eagleeye.main": "Vision Tactical: EagleEye",
   "item.vision_tactical_eagleeye.tactical_drone": "전술 FPV 쿼드콥터 드론",
   "item.vision_tactical_eagleeye.tactical_drone.desc": "Lattice OS 텔레메트리를 갖춘 자율 정찰 및 페이로드 드론.",
   "item.vision_tactical_eagleeye.tactical_drone.battery": "배터리: %s%%",
@@ -9,7 +9,7 @@
   "item.vision_tactical_eagleeye.lattice_fpv_controller.desc": "무지연 FPV 드론 조종 및 자동 호버 제어를 위한 전술 단말기.",
   "item.vision_tactical_eagleeye.lattice_fpv_controller.controls": "우클릭: FPV 연결 | Shift + 우클릭: 자동 호버 전환",
   "item.vision_tactical_eagleeye.eagleeye_datalink_module": "EagleEye 데이터링크 모듈",
-  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc": "Vision Goggles에 장착하여 드론의 EagleEye AR 표적 추적을 활성화합니다.",
+  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc": "Vision Goggles에 장착하여 드론의",
   "item.vision_tactical_eagleeye.drone_payload_emp": "드론 페이로드: EMP 차저",
   "item.vision_tactical_eagleeye.drone_payload_emp.desc": "비살상 전자기 펄스 탄두. 적을 무력화하고 주변 야간투시경을 교란합니다.",
   "item.vision_tactical_eagleeye.drone_payload_he": "드론 페이로드: HE 탄두",
@@ -34,5 +34,10 @@
   "subtitles.vision_tactical_eagleeye.lattice_unlink": "Lattice OS 데이터링크 해제됨",
   "subtitles.vision_tactical_eagleeye.lattice_scan": "Lattice 정찰 펄스 방출됨",
   "subtitles.vision_tactical_eagleeye.emp_blast": "EMP 차저 폭발",
-  "subtitles.vision_tactical_eagleeye.payload_arm": "드론 페이로드 장착됨"
+  "subtitles.vision_tactical_eagleeye.payload_arm": "드론 페이로드 장착됨",
+  "item.vision_tactical_eagleeye.tactical_drone.desc2": "Streams live Lattice OS AR telemetry.",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.desc2": "Toggles drone Auto-Hover & recon link.",
+  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc2": "EagleEye AR 표적 추적을 활성화합니다.",
+  "item.vision_tactical_eagleeye.drone_payload_emp.desc2": "Disorients foes & blinds NVG optics.",
+  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "Right-click a deployed drone to arm."
 }

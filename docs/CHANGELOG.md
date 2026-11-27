@@ -1,5 +1,12 @@
 # Changelog — Vision Tactical: EagleEye & Drones
 
+## [1.0.1] - 2026-11-27
+### Added & Fixed
+- **Registro de Módulo en Estación de Modificación (`VisionTacticalEagleEye`):** Registrado `eagleeye_datalink_module` vía `VisionGogglesAPI.registerAddonModule` para permitir su instalación y extracción en las gafas dentro de la Estación de Modificación de `Vision Goggles`.
+- **Dron 3D en Inventario y Sprites `Tactical Charcoal` (`TacticalDroneItem`, `TacticalDroneItemRenderer`, `scripts/polish_assets_and_lang.py`):** `TacticalDroneItem` implementa `GeoItem` con `GeoItemRenderer` renderizando `tactical_drone.geo.json` en 3D en GUI/mano/suelo; regeneradas las texturas `16×16` de `eagleeye_datalink_module`, `lattice_fpv_controller`, `drone_payload_emp` y `drone_payload_he` con la paleta `Tactical Charcoal` de `Vision Goggles`.
+- **Creative Tab y Tooltips Compactos (16 idiomas):** Título acortado a `"Vision Tactical: EagleEye"` en todos los idiomas y tooltips largos divididos en 2 líneas cortas.
+- **Modo FPV Limpio y Bloqueo de Inventario (`FpvGameRendererMixin`, `FpvGuiMixin`, `FpvInventoryMixin`, `MinecraftCameraMixin`, `EagleEyeHudOverlay`):** Cancelado `GameRenderer#renderItemInHand` en cámara FPV (sin brazo ni armas TaCZ), ocultadas hotbar/barras vanilla, bloqueados scroll/teclas `1..9`, inventario (`E`), drop (`Q`) y uso/ataque mientras se pilota el dron, y limpiadas las etiquetas `[TGT-xxx]` en pantalla (corchete compacto + barra HP en objetivos periféricos, etiqueta completa `[UAV]` solo en el objetivo central).
+
 ## [1.0.0] - 2026-11-26
 ### Added
 - Inicialización del proyecto Architectury 1.20.1 (`common`, `forge`, `fabric`) con soporte de GeckoLib 4.4.4 y Vision Goggles 2.0.0 API.

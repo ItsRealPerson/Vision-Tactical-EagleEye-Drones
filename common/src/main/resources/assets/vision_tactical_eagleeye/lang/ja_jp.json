@@ -1,5 +1,5 @@
 {
-  "itemGroup.vision_tactical_eagleeye.main": "Vision Tactical: EagleEye & ドローン",
+  "itemGroup.vision_tactical_eagleeye.main": "Vision Tactical: EagleEye",
   "item.vision_tactical_eagleeye.tactical_drone": "戦術FPVクアッドコプタードローン",
   "item.vision_tactical_eagleeye.tactical_drone.desc": "Lattice OSテレメトリ搭載の自律型偵察・ペイロードドローン。",
   "item.vision_tactical_eagleeye.tactical_drone.battery": "バッテリー: %s%%",
@@ -9,7 +9,7 @@
   "item.vision_tactical_eagleeye.lattice_fpv_controller.desc": "低遅延FPV操縦とオートホバー制御用の高耐久戦術端末。",
   "item.vision_tactical_eagleeye.lattice_fpv_controller.controls": "右クリック: FPV接続 | Shift+右クリック: オートホバー切替",
   "item.vision_tactical_eagleeye.eagleeye_datalink_module": "EagleEye データリンクモジュール",
-  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc": "Vision Gogglesに装着し、ドローンからのEagleEye AR標的追跡を有効化。",
+  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc": "Vision Gogglesに装着し、",
   "item.vision_tactical_eagleeye.drone_payload_emp": "ドローンペイロード: EMPチャージ",
   "item.vision_tactical_eagleeye.drone_payload_emp.desc": "非致死性電磁パルス弾。敵を無力化し周囲の暗視ゴーグルを眩惑。",
   "item.vision_tactical_eagleeye.drone_payload_he": "ドローンペイロード: HE弾頭",
@@ -34,5 +34,10 @@
   "subtitles.vision_tactical_eagleeye.lattice_unlink": "Lattice OSリンク切断",
   "subtitles.vision_tactical_eagleeye.lattice_scan": "Lattice偵察パルス発射",
   "subtitles.vision_tactical_eagleeye.emp_blast": "EMPチャージ起爆",
-  "subtitles.vision_tactical_eagleeye.payload_arm": "ドローンペイロード装着"
+  "subtitles.vision_tactical_eagleeye.payload_arm": "ドローンペイロード装着",
+  "item.vision_tactical_eagleeye.tactical_drone.desc2": "Streams live Lattice OS AR telemetry.",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.desc2": "Toggles drone Auto-Hover & recon link.",
+  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc2": "ドローンからのEagleEye AR標的追跡を有効化。",
+  "item.vision_tactical_eagleeye.drone_payload_emp.desc2": "Disorients foes & blinds NVG optics.",
+  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "Right-click a deployed drone to arm."
 }

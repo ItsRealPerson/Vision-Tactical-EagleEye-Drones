@@ -311,6 +311,13 @@ public final class EagleEyeHudOverlay {
         float halfWidth = halfHeight * aspectRatio;
 
         Font font = mc.font;
+        int centerX = width / 2;
+        int centerY = height / 2;
+
+        record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, double centerDistSq) {}
+        java.util.List<ProjectedTrack> projected = new java.util.ArrayList<>(tracks.size());
+        ProjectedTrack focused = null;
+        double bestCenterDistSq = 58.0 * 58.0;
 
         for (LatticeTrackEntry track : tracks) {
             double wx = track.x();
@@ -362,23 +369,43 @@ public final class EagleEyeHudOverlay {
 
             int sx = Math.round((ndcX + 1.0f) * 0.5f * width);
             int sy = Math.round((1.0f - ndcY) * 0.5f * height);
+            double dx = sx - centerX;
+            double dy = sy - centerY;
+            double cDistSq = dx * dx + dy * dy;
 
-            // Beveled diamond / tactical bracket box
-            int boxHalf = Mth.clamp((int) (140.0 / Math.max(4.0, distance)), 5, 13);
-            drawBeveledTargetBox(gui, sx, sy, boxHalf, color);
+            ProjectedTrack pt = new ProjectedTrack(track, sx, sy, distance, color, cDistSq);
+            projected.add(pt);
+            if (cDistSq < bestCenterDistSq) {
+                bestCenterDistSq = cDistSq;
+                focused = pt;
+            }
+        }
 
-            // Elevation stem line
-            gui.fill(sx, sy + boxHalf + 1, sx + 1, sy + boxHalf + 6, color);
+        // Render peripheral targets first (compact bracket + mini HP bar only — no overlapping text walls)
+        for (ProjectedTrack pt : projected) {
+            boolean isFocused = (pt == focused);
+            int boxHalf = Mth.clamp((int) (130.0 / Math.max(4.0, pt.distance)), 4, isFocused ? 13 : 9);
+            int drawColor = isFocused ? pt.color : ((pt.color & 0x00FFFFFF) | 0xCC000000);
+            drawBeveledTargetBox(gui, pt.sx, pt.sy, boxHalf, drawColor);
 
-            // Compact Lattice track label
-            int hpPct = Math.round(Mth.clamp(track.healthPct(), 0.0f, 1.0f) * 100.0f);
-            String tag = String.format("[TGT-%d] %.1fm | HP %d%% | UAV-LINK",
-                    Math.abs(track.entityId()) % 1000, distance, hpPct);
-            int tagW = font.width(tag);
-            int tx = Mth.clamp(sx - tagW / 2, 4, width - tagW - 4);
-            int ty = Mth.clamp(sy - boxHalf - 11, 22, height - 12);
-            gui.fill(tx - 2, ty - 1, tx + tagW + 2, ty + 9, 0x88081016);
-            gui.drawString(font, tag, tx, ty, color, false);
+            float hpRatio = Mth.clamp(pt.entry.healthPct(), 0.0f, 1.0f);
+            int barW = isFocused ? 18 : 12;
+            int barX = pt.sx - barW / 2;
+            int barY = pt.sy + boxHalf + 2;
+            gui.fill(barX - 1, barY - 1, barX + barW + 1, barY + 3, 0x99060A0F);
+            int fillW = Math.max(1, Math.round(barW * hpRatio));
+            int hpCol = hpRatio > 0.5f ? 0xFF39FF88 : (hpRatio > 0.25f ? 0xFFFFCC00 : 0xFFFF3B30);
+            gui.fill(barX, barY, barX + fillW, barY + 2, hpCol);
+
+            if (isFocused) {
+                int hpPct = Math.round(hpRatio * 100.0f);
+                String tag = String.format("[UAV] %.1fm | %d%%", pt.distance, hpPct);
+                int tagW = font.width(tag);
+                int tx = Mth.clamp(pt.sx - tagW / 2, 4, width - tagW - 4);
+                int ty = Mth.clamp(pt.sy - boxHalf - 11, 22, height - 12);
+                gui.fill(tx - 2, ty - 1, tx + tagW + 2, ty + 9, 0xAA081016);
+                gui.drawString(font, tag, tx, ty, pt.color, false);
+            }
         }
     }
 

@@ -78,5 +78,7 @@ public class EagleEyeModuleItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("item.vision_tactical_eagleeye.eagleeye_datalink_module.desc")
                 .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.vision_tactical_eagleeye.eagleeye_datalink_module.desc2")
+                .withStyle(ChatFormatting.DARK_GRAY));
     }
 }

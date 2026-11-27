@@ -31,6 +31,10 @@ public class DronePayloadItem extends Item {
         String key = this.payloadType == TacticalDroneEntity.PAYLOAD_EMP
                 ? "item.vision_tactical_eagleeye.drone_payload_emp.desc"
                 : "item.vision_tactical_eagleeye.drone_payload_he.desc";
+        String key2 = this.payloadType == TacticalDroneEntity.PAYLOAD_EMP
+                ? "item.vision_tactical_eagleeye.drone_payload_emp.desc2"
+                : "item.vision_tactical_eagleeye.drone_payload_he.desc2";
         tooltip.add(Component.translatable(key).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable(key2).withStyle(ChatFormatting.DARK_GRAY));
     }
 }

@@ -7,6 +7,9 @@
   "mixins": [
   ],
   "client": [
+    "client.FpvGameRendererMixin",
+    "client.FpvGuiMixin",
+    "client.FpvInventoryMixin",
     "client.GameRendererAccessor",
     "client.KeyboardInputFpvMixin",
     "client.LocalPlayerTurnMixin",

@@ -1,5 +1,5 @@
 {
-  "itemGroup.vision_tactical_eagleeye.main": "Vision Tactical：鷹眼與無人機",
+  "itemGroup.vision_tactical_eagleeye.main": "Vision Tactical: EagleEye",
   "item.vision_tactical_eagleeye.tactical_drone": "戰術 FPV 四旋翼無人機",
   "item.vision_tactical_eagleeye.tactical_drone.desc": "搭載 Lattice OS 遙測系統的自主偵察與載荷四旋翼無人機。",
   "item.vision_tactical_eagleeye.tactical_drone.battery": "電量：%s%%",
@@ -34,5 +34,10 @@
   "subtitles.vision_tactical_eagleeye.lattice_unlink": "Lattice OS 資料鏈已斷開",
   "subtitles.vision_tactical_eagleeye.lattice_scan": "發出 Lattice 偵察脈衝",
   "subtitles.vision_tactical_eagleeye.emp_blast": "EMP 電荷引爆",
-  "subtitles.vision_tactical_eagleeye.payload_arm": "無人機載荷已安裝"
+  "subtitles.vision_tactical_eagleeye.payload_arm": "無人機載荷已安裝",
+  "item.vision_tactical_eagleeye.tactical_drone.desc2": "Streams live Lattice OS AR telemetry.",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.desc2": "Toggles drone Auto-Hover & recon link.",
+  "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc2": "Unlocks EagleEye AR drone tracking.",
+  "item.vision_tactical_eagleeye.drone_payload_emp.desc2": "Disorients foes & blinds NVG optics.",
+  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "Right-click a deployed drone to arm."
 }

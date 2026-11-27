@@ -1,10 +1,12 @@
 package dev.itsrealperson.vision_tactical_eagleeye;
 
+import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.platform.Platform;
 import dev.itsrealperson.vision_goggles.api.VisionGogglesAPI;
 import dev.itsrealperson.vision_goggles.recipe.StationBlueprints;
+import dev.itsrealperson.vision_tactical_eagleeye.item.EagleEyeModuleItem;
 import dev.itsrealperson.vision_tactical_eagleeye.network.LatticeTrackManager;
 import dev.itsrealperson.vision_tactical_eagleeye.network.ModNetworking;
 import dev.itsrealperson.vision_tactical_eagleeye.registry.ModCreativeTabs;
@@ -64,8 +66,17 @@ public final class VisionTacticalEagleEye {
 
         registerExternalLuaScriptSafe("09_anduril_lattice_os.lua", LATTICE_LUA_SCRIPT);
         registerStationBlueprintsSafe();
+        LifecycleEvent.SETUP.register(VisionTacticalEagleEye::registerAddonModulesSafe);
 
         LOGGER.info("[Vision Tactical: EagleEye & Drones] Core initialized.");
+    }
+
+    private static void registerAddonModulesSafe() {
+        try {
+            VisionGogglesAPI.registerAddonModule(ModItems.EAGLEEYE_DATALINK_MODULE.get(), EagleEyeModuleItem.MODULE_ID);
+        } catch (Throwable e) {
+            LOGGER.warn("[EagleEye] Could not register EagleEye module with VisionGogglesAPI: {}", e.getMessage());
+        }
     }
 
     private static void registerExternalLuaScriptSafe(String fileName, String source) {

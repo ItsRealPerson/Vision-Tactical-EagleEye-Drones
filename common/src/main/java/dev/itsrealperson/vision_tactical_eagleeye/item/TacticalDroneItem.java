@@ -21,15 +21,35 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Deployable tactical FPV quadcopter item storing battery charge and payload type in NBT.
+ * Implements {@link GeoItem} to render the full 3D {@code tactical_drone.geo.json} model in GUI, hand, and world.
  */
-public class TacticalDroneItem extends Item {
+public class TacticalDroneItem extends Item implements GeoItem {
     public static final String TAG_BATTERY = "Battery";
     public static final String TAG_PAYLOAD = "PayloadType";
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final Supplier<Object> renderProvider = new Supplier<Object>() {
+        private Object geoRenderProvider;
+
+        @Override
+        public Object get() {
+            if (this.geoRenderProvider == null) {
+                createRenderer(provider -> this.geoRenderProvider = provider);
+            }
+            return this.geoRenderProvider;
+        }
+    };
 
     public TacticalDroneItem(Properties properties) {
         super(properties);
@@ -136,9 +156,30 @@ public class TacticalDroneItem extends Item {
         };
         tooltip.add(Component.translatable("item.vision_tactical_eagleeye.tactical_drone.desc")
                 .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.vision_tactical_eagleeye.tactical_drone.desc2")
+                .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.translatable("item.vision_tactical_eagleeye.tactical_drone.battery", pct)
                 .withStyle(pct > 25 ? ChatFormatting.AQUA : ChatFormatting.RED));
         tooltip.add(Component.translatable("item.vision_tactical_eagleeye.tactical_drone.payload", payloadName)
                 .withStyle(ChatFormatting.GOLD));
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+    }
+
+    @Override
+    public void createRenderer(Consumer<Object> consumer) {
+        dev.itsrealperson.vision_tactical_eagleeye.client.renderer.TacticalDroneItemRenderHelper.createRenderer(consumer);
+    }
+
+    @Override
+    public Supplier<Object> getRenderProvider() {
+        return this.renderProvider;
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 }
