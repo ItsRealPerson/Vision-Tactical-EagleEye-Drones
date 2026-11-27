@@ -2,6 +2,7 @@ package dev.itsrealperson.vision_tactical_eagleeye.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.shaders.Uniform;
+import dev.itsrealperson.vision_goggles.client.ThermalEntityPainter;
 import dev.itsrealperson.vision_tactical_eagleeye.VisionTacticalEagleEye;
 import dev.itsrealperson.vision_tactical_eagleeye.mixin.client.PostChainAccessor;
 import net.fabricmc.api.EnvType;
@@ -11,14 +12,17 @@ import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.function.IntSupplier;
+
 /**
- * Dedicated GLSL PostChain manager for the Tactical Drone's military EO/UAV camera feed.
+ * Dedicated GLSL PostChain manager for the Tactical Drone's military EO-IR camera feed.
  * Runs exclusively while FPV is active, independent of Vision Goggles.
  */
 @Environment(EnvType.CLIENT)
 public final class DroneEoShaderManager {
     private static final ResourceLocation UAV_EO_SHADER =
             new ResourceLocation(VisionTacticalEagleEye.MOD_ID, "shaders/post/uav_eo.json");
+    private static final IntSupplier THERMAL_MASK_SUPPLIER = ThermalEntityPainter::getMaskTextureId;
 
     private static PostChain eoChain = null;
     private static int lastWidth = -1;
@@ -76,6 +80,7 @@ public final class DroneEoShaderManager {
             float timeSec = (mc.level.getGameTime() + partialTick) / 20.0f;
             float signal = DroneFpvClientController.getPrimarySignal();
             for (PostPass pass : ((PostChainAccessor) eoChain).vision_tactical_eagleeye$getPasses()) {
+                pass.getEffect().setSampler("ThermalMask", THERMAL_MASK_SUPPLIER);
                 Uniform uTime = pass.getEffect().getUniform("Time");
                 if (uTime != null) {
                     uTime.set(timeSec);

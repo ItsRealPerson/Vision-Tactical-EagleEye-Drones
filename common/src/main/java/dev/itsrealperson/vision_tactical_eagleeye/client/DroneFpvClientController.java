@@ -141,12 +141,15 @@ public final class DroneFpvClientController {
 
         mc.options.setCameraType(CameraType.FIRST_PERSON);
         mc.setCameraEntity(drone);
+        setVisionGogglesThermalOverride(true);
     }
 
     public static void disconnectFpv(boolean notifyServer) {
         int prevId = activeDroneId;
         linkedInFpv = false;
         activeDroneId = -1;
+
+        setVisionGogglesThermalOverride(false);
 
         if (notifyServer && prevId >= 0) {
             ModNetworking.sendDroneInputC2S(
@@ -166,6 +169,17 @@ public final class DroneFpvClientController {
             }
         } finally {
             allowingCameraRestore = false;
+        }
+    }
+
+    private static void setVisionGogglesThermalOverride(boolean enable) {
+        try {
+            java.lang.reflect.Method m = VisionGogglesClientAPI.class.getMethod(
+                    "setExternalVisionOverride",
+                    dev.itsrealperson.vision_goggles.util.VisionMode.class
+            );
+            m.invoke(null, enable ? dev.itsrealperson.vision_goggles.util.VisionMode.THERMAL : null);
+        } catch (Throwable ignored) {
         }
     }
 

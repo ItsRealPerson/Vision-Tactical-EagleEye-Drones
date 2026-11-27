@@ -1,6 +1,7 @@
 #version 150
 
 uniform sampler2D DiffuseSampler;
+uniform sampler2D ThermalMask;
 uniform vec2 OutSize;
 uniform float Time;
 uniform float Signal;
@@ -26,34 +27,37 @@ void main() {
         }
     }
 
-    // Subtle EO optical lens micro-separation at edges
     vec2 centered = uv - 0.5;
     float dist = length(centered);
-    float chroma = 0.0008 * (0.3 + dist * 1.2 + deg * 3.0);
-    float r = texture(DiffuseSampler, clamp(uv + vec2(chroma, 0.0), 0.001, 0.999)).r;
-    float g = texture(DiffuseSampler, clamp(uv, 0.001, 0.999)).g;
-    float b = texture(DiffuseSampler, clamp(uv - vec2(chroma, 0.0), 0.001, 0.999)).b;
-    vec3 src = vec3(r, g, b);
+    vec3 src = texture(DiffuseSampler, clamp(uv, 0.001, 0.999)).rgb;
 
-    // Cool slate-blue / crisp high-clarity EO/UAV camera grade (distinct from green NVG, never darkens scene)
+    // True 94% military EO-IR monochrome (MQ-9 / EagleEye cold slate grayscale, deep blacks, crisp contrast)
     float luma = dot(src, vec3(0.299, 0.587, 0.114));
-    vec3 eoMono = vec3(luma * 0.86, luma * 0.97, luma * 1.12);
-    vec3 col = mix(src, eoMono, 0.60);
+    // High-contrast tactical S-curve on luminance
+    float contrastLuma = clamp((luma - 0.46) * 1.26 + 0.48, 0.0, 1.0);
+    vec3 eoMono = vec3(contrastLuma * 0.90, contrastLuma * 0.96, contrastLuma * 1.05);
+    vec3 col = mix(src, eoMono, 0.94);
 
-    // Crisp clarity contrast without crushing shadows
-    col = clamp((col - 0.5) * 1.08 + 0.515, 0.0, 1.0);
+    // EO-IR White-Hot Thermal Signature Overlay from ThermalMask (highlights warm-blooded living entities)
+    vec4 mask = texture(ThermalMask, clamp(uv, 0.001, 0.999));
+    if (mask.a > 0.05) {
+        float heat = clamp(max(mask.r, max(mask.g, mask.b)), 0.0, 1.0);
+        float hot = smoothstep(0.08, 0.85, heat);
+        vec3 whiteHot = mix(vec3(0.76, 0.84, 0.92), vec3(0.98, 0.99, 1.0), hot);
+        col = mix(col, whiteHot, clamp(mask.a * (0.68 + 0.32 * hot), 0.0, 0.96));
+    }
 
     // Fine CMOS digital sensor grain
     float grain = (hash12(gl_FragCoord.xy + vec2(fract(Time * 13.7) * 512.0, fract(Time * 7.3) * 512.0)) - 0.5);
-    col += grain * (0.022 + deg * 0.11);
+    col += grain * (0.024 + deg * 0.11);
 
-    // Subtle horizontal EO camera scanlines
+    // Subtle horizontal EO-IR camera scanlines
     float scan = sin(gl_FragCoord.y * 1.5707963);
-    col *= 1.0 - 0.032 * (0.5 + 0.5 * scan);
+    col *= 1.0 - 0.036 * (0.5 + 0.5 * scan);
 
-    // Gentle optical gimbal edge vignette (preserves full clarity across the field of view)
+    // Clean optical gimbal edge vignette
     float vig = smoothstep(0.98, 0.38, dist);
-    col *= mix(0.80, 1.0, vig);
+    col *= mix(0.76, 1.0, vig);
 
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

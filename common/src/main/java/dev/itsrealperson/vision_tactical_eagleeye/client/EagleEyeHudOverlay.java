@@ -335,17 +335,21 @@ public final class EagleEyeHudOverlay {
         }
         float fovRad = (float) Math.toRadians(fovDeg);
         float halfHeight = (float) Math.tan(fovRad * 0.5f);
-        float aspectRatio = (float) width / Math.max(1.0f, (float) height);
+        int winW = Math.max(1, mc.getWindow().getScreenWidth());
+        int winH = Math.max(1, mc.getWindow().getScreenHeight());
+        float aspectRatio = (float) winW / (float) winH;
         float halfWidth = halfHeight * aspectRatio;
+        float guiW = (float) mc.getWindow().getGuiScaledWidth();
+        float guiH = (float) mc.getWindow().getGuiScaledHeight();
 
         Font font = mc.font;
-        int centerX = width / 2;
-        int centerY = height / 2;
+        int centerX = Math.round(guiW * 0.5f);
+        int centerY = Math.round(guiH * 0.5f);
         boolean inFpv = DroneFpvClientController.isFpvActive();
         int activeFpvId = inFpv ? DroneFpvClientController.getActiveDroneId() : -1;
         Entity fpvDroneEntity = inFpv ? DroneFpvClientController.getActiveDrone(mc) : null;
 
-        record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, double centerDistSq) {}
+        record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, boolean warm, double centerDistSq) {}
         java.util.List<ProjectedTrack> projected = new java.util.ArrayList<>(tracks.size());
         ProjectedTrack focused = null;
         double bestCenterDistSq = 58.0 * 58.0;
@@ -360,7 +364,7 @@ public final class EagleEyeHudOverlay {
             }
             Vec3 interp = liveEntity.getPosition(partialTicks);
             double wx = interp.x;
-            double wy = interp.y + liveEntity.getBbHeight() * 0.55;
+            double wy = interp.y + liveEntity.getBbHeight() * 0.50;
             double wz = interp.z;
 
             double relX = wx - camPos.x;
@@ -399,7 +403,7 @@ public final class EagleEyeHudOverlay {
                 default -> COLOR_NEUTRAL;
             };
 
-            if (forward <= 0.05f) {
+            if (forward <= 0.08f) {
                 if (drawOffscreenArrows && track.threatLevel() == LatticeTrackEntry.THREAT_HOSTILE) {
                     drawEdgeIndicator(gui, font, right, up, true, width, height, color);
                 }
@@ -409,20 +413,28 @@ public final class EagleEyeHudOverlay {
             float ndcX = right / (forward * halfWidth);
             float ndcY = up / (forward * halfHeight);
 
-            if (ndcX < -1.05f || ndcX > 1.05f || ndcY < -1.05f || ndcY > 1.05f) {
+            if (ndcX < -1.02f || ndcX > 1.02f || ndcY < -1.02f || ndcY > 1.02f) {
                 if (drawOffscreenArrows && track.threatLevel() == LatticeTrackEntry.THREAT_HOSTILE) {
                     drawEdgeIndicator(gui, font, ndcX, ndcY, false, width, height, color);
                 }
                 continue;
             }
 
-            int sx = Math.round((ndcX + 1.0f) * 0.5f * width);
-            int sy = Math.round((1.0f - ndcY) * 0.5f * height);
+            int sx = Math.round((ndcX + 1.0f) * 0.5f * guiW);
+            int sy = Math.round((1.0f - ndcY) * 0.5f * guiH);
             double dx = sx - centerX;
             double dy = sy - centerY;
             double cDistSq = dx * dx + dy * dy;
 
-            ProjectedTrack pt = new ProjectedTrack(track, sx, sy, distance, color, cDistSq);
+            boolean isWarm = false;
+            if (liveEntity instanceof net.minecraft.world.entity.LivingEntity living) {
+                try {
+                    isWarm = dev.itsrealperson.vision_goggles.client.ThermalEntityPainter.emitsThermalHeat(living);
+                } catch (Throwable ignored) {
+                }
+            }
+
+            ProjectedTrack pt = new ProjectedTrack(track, sx, sy, distance, color, isWarm, cDistSq);
             projected.add(pt);
             if (cDistSq < bestCenterDistSq) {
                 bestCenterDistSq = cDistSq;
@@ -430,12 +442,16 @@ public final class EagleEyeHudOverlay {
             }
         }
 
-        // Render peripheral targets first (compact bracket + mini HP bar only — no overlapping text walls)
+        // Render peripheral targets first (compact bracket + mini HP bar + white-hot thermal pip for warm targets)
         for (ProjectedTrack pt : projected) {
             boolean isFocused = (pt == focused);
             int boxHalf = Mth.clamp((int) (130.0 / Math.max(4.0, pt.distance)), 4, isFocused ? 13 : 9);
             int drawColor = isFocused ? pt.color : ((pt.color & 0x00FFFFFF) | 0xCC000000);
             drawBeveledTargetBox(gui, pt.sx, pt.sy, boxHalf, drawColor);
+            if (pt.warm) {
+                // Crisp EO-IR white-hot thermal core pip
+                gui.fill(pt.sx - 1, pt.sy - 1, pt.sx + 2, pt.sy + 2, 0xFFF4FAFF);
+            }
 
             float hpRatio = Mth.clamp(pt.entry.healthPct(), 0.0f, 1.0f);
             int barW = isFocused ? 18 : 12;
@@ -448,12 +464,14 @@ public final class EagleEyeHudOverlay {
 
             if (isFocused) {
                 int hpPct = Math.round(hpRatio * 100.0f);
-                String tag = String.format("[UAV] %.1fm | %d%%", pt.distance, hpPct);
+                String prefix = pt.warm ? "[THERM]" : "[OPTIC]";
+                String tag = String.format("%s %.1fm | %d%%", prefix, pt.distance, hpPct);
+                int tagColor = pt.warm ? 0xFFF4FAFF : pt.color;
                 int tagW = font.width(tag);
                 int tx = Mth.clamp(pt.sx - tagW / 2, 4, width - tagW - 4);
                 int ty = Mth.clamp(pt.sy - boxHalf - 11, 22, height - 12);
                 gui.fill(tx - 2, ty - 1, tx + tagW + 2, ty + 9, 0xAA081016);
-                gui.drawString(font, tag, tx, ty, pt.color, false);
+                gui.drawString(font, tag, tx, ty, tagColor, false);
             }
         }
     }

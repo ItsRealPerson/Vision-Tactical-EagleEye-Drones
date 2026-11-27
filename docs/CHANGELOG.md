@@ -21,6 +21,9 @@
 - **Claridad Nocturna EO Real, Eliminación de Linterna del Dron y Escáner Sin X-Ray (#185):**
   - Eliminado el emisor de linterna/foco IR del dron (`DroneFpvClientController.emitDroneIrSpots`) y activado el lightmap nocturno limpio durante FPV (`FpvVisionRendererSuppressMixin#shouldApplyNightVisionLight` -> `true`) combinado con `uav_eo.fsh` calibrado para máxima claridad nocturna azul-pizarra sin verde NVG.
   - Exigido raycast real de oclusión `ClipContext.Block.VISUAL` + cono frontal de cámara (`dot > 0.55`) tanto en servidor (`TacticalDroneEntity#performLatticeScan`) como en cliente FPV (`EagleEyeHudOverlay#renderProjectedTracks`), eliminando el bypass X-Ray de `16m` y cualquier mob detrás de bloques o fuera de cámara.
+- **Cámara EO-IR Monocromática 94% + Térmico White-Hot (`ThermalMask`) + Proyección Exacta en Modo Jugador (#191):**
+  - `uav_eo.fsh` elevado al 94% de desaturación monocromática fría azul-pizarra de alto contraste e integrado con el sampler `ThermalMask` (`DroneEoShaderManager`, `DroneFpvClientController`) para resaltar entidades de sangre caliente en **White-Hot FLIR**.
+  - `EagleEyeHudOverlay` distingue objetivos cálidos (`[THERM]` + núcleo blanco-caliente) vs fríos/no-muertos (`[OPTIC]`) y usa exactamente la relación de aspecto real del framebuffer (`screenWidth / screenHeight`) + `liveEntity.getPosition(partialTicks)` con `Camera` ortonormal para precisión 1:1 al volver a modo jugador.
 
 ## [1.0.0] - 2026-11-26
 ### Added
