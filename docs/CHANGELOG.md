@@ -24,6 +24,9 @@
 - **Cámara EO-IR Monocromática 94% + Térmico White-Hot (`ThermalMask`) + Proyección Exacta en Modo Jugador (#191):**
   - `uav_eo.fsh` elevado al 94% de desaturación monocromática fría azul-pizarra de alto contraste e integrado con el sampler `ThermalMask` (`DroneEoShaderManager`, `DroneFpvClientController`) para resaltar entidades de sangre caliente en **White-Hot FLIR**.
   - `EagleEyeHudOverlay` distingue objetivos cálidos (`[THERM]` + núcleo blanco-caliente) vs fríos/no-muertos (`[OPTIC]`) y usa exactamente la relación de aspecto real del framebuffer (`screenWidth / screenHeight`) + `liveEntity.getPosition(partialTicks)` con `Camera` ortonormal para precisión 1:1 al volver a modo jugador.
+- **Rotación FPV sin Jitter, HUD Limpio sin `[THERM]`/`[OPTIC]` y Proyección Directa `VisionHUDOverlay` (#194):**
+  - `TacticalDroneEntity#lerpTo` y `DroneFpvClientController#handleMouseTurn` mantienen la rotación FPV 100% autoritativa en cliente (y directa en servidor sin `rotLerp(0.45f)`), eliminando el snap-back/movimiento raro al girar el dron.
+  - Eliminados `[THERM]` y `[OPTIC]` de `EagleEyeHudOverlay` (etiqueta limpia `X.Xm | HP%`) y conectada la proyección directamente a `VisionHUDOverlay.projectWorldToGui` con `mc.getFrameTime()` para 0 desfase al caminar/moverse con el jugador.
 
 ## [1.0.0] - 2026-11-26
 ### Added

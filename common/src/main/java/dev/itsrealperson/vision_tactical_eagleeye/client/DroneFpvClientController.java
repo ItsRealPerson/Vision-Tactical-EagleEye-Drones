@@ -195,9 +195,21 @@ public final class DroneFpvClientController {
         if (drone != null) {
             drone.setYRot(fpvYaw);
             drone.setXRot(fpvPitch);
+            drone.yRotO = fpvYaw;
+            drone.xRotO = fpvPitch;
             drone.setYHeadRot(fpvYaw);
+            drone.yHeadRotO = fpvYaw;
             drone.yBodyRot = fpvYaw;
+            drone.yBodyRotO = fpvYaw;
         }
+    }
+
+    public static float getFpvYaw() {
+        return fpvYaw;
+    }
+
+    public static float getFpvPitch() {
+        return fpvPitch;
     }
 
     private static void onClientTick(Minecraft mc) {

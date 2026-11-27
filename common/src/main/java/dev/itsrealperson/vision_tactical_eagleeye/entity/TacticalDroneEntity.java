@@ -241,13 +241,12 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
         if (battery > 0.0f) {
             boolean activelyPiloted = isFpvLinked() && this.fpvInputTimeout > 0;
             if (activelyPiloted) {
-                float newYaw = Mth.rotLerp(0.45f, this.getYRot(), this.targetYaw);
-                float newPitch = Mth.lerp(0.45f, this.getXRot(), this.targetPitch);
-                this.setYRot(newYaw);
-                this.setXRot(newPitch);
-                this.yRotO = newYaw;
-                this.setYHeadRot(newYaw);
-                this.yBodyRot = newYaw;
+                this.setYRot(this.targetYaw);
+                this.setXRot(this.targetPitch);
+                this.yRotO = this.targetYaw;
+                this.xRotO = this.targetPitch;
+                this.setYHeadRot(this.targetYaw);
+                this.yBodyRot = this.targetYaw;
             }
 
             Vec3 vel = this.getDeltaMovement();
@@ -331,6 +330,24 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
         float desiredRoll = Mth.clamp(-localLeft * 48.0f, -24.0f, 24.0f);
         this.clientTiltPitch = Mth.lerp(0.22f, this.clientTiltPitch, desiredPitch);
         this.clientTiltRoll = Mth.lerp(0.22f, this.clientTiltRoll, desiredRoll);
+    }
+
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int lerpSteps, boolean teleport) {
+        if (this.level().isClientSide
+                && dev.itsrealperson.vision_tactical_eagleeye.client.DroneFpvClientController.isFpvActive()
+                && dev.itsrealperson.vision_tactical_eagleeye.client.DroneFpvClientController.getActiveDroneId() == this.getId()) {
+            // Keep FPV camera rotation client-authoritative so server sync packets never fight mouse look
+            float yaw = dev.itsrealperson.vision_tactical_eagleeye.client.DroneFpvClientController.getFpvYaw();
+            float pitch = dev.itsrealperson.vision_tactical_eagleeye.client.DroneFpvClientController.getFpvPitch();
+            super.lerpTo(x, y, z, yaw, pitch, lerpSteps, teleport);
+            this.setYRot(yaw);
+            this.setXRot(pitch);
+            this.yRotO = yaw;
+            this.xRotO = pitch;
+            return;
+        }
+        super.lerpTo(x, y, z, yRot, xRot, lerpSteps, teleport);
     }
 
     @Override

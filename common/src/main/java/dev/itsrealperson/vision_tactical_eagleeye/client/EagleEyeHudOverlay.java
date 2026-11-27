@@ -322,6 +322,7 @@ public final class EagleEyeHudOverlay {
         if (tracks.isEmpty() || mc.gameRenderer == null || mc.level == null) {
             return;
         }
+        float pt = mc.getFrameTime();
         Camera camera = mc.gameRenderer.getMainCamera();
         Vec3 camPos = camera.getPosition();
         Vector3f look = camera.getLookVector();
@@ -330,7 +331,7 @@ public final class EagleEyeHudOverlay {
 
         double fovDeg = 70.0;
         try {
-            fovDeg = ((GameRendererAccessor) mc.gameRenderer).vision_tactical_eagleeye$getFov(camera, partialTicks, true);
+            fovDeg = ((GameRendererAccessor) mc.gameRenderer).vision_tactical_eagleeye$getFov(camera, pt, true);
         } catch (Throwable ignored) {
         }
         float fovRad = (float) Math.toRadians(fovDeg);
@@ -349,7 +350,7 @@ public final class EagleEyeHudOverlay {
         int activeFpvId = inFpv ? DroneFpvClientController.getActiveDroneId() : -1;
         Entity fpvDroneEntity = inFpv ? DroneFpvClientController.getActiveDrone(mc) : null;
 
-        record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, boolean warm, double centerDistSq) {}
+        record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, double centerDistSq) {}
         java.util.List<ProjectedTrack> projected = new java.util.ArrayList<>(tracks.size());
         ProjectedTrack focused = null;
         double bestCenterDistSq = 58.0 * 58.0;
@@ -362,7 +363,7 @@ public final class EagleEyeHudOverlay {
             if (liveEntity == null || !liveEntity.isAlive()) {
                 continue;
             }
-            Vec3 interp = liveEntity.getPosition(partialTicks);
+            Vec3 interp = liveEntity.getPosition(pt);
             double wx = interp.x;
             double wy = interp.y + liveEntity.getBbHeight() * 0.50;
             double wz = interp.z;
@@ -394,14 +395,15 @@ public final class EagleEyeHudOverlay {
                     }
                 }
             }
-            float up = (float) (relX * upVec.x + relY * upVec.y + relZ * upVec.z);
-            float right = -(float) (relX * leftVec.x + relY * leftVec.y + relZ * leftVec.z);
 
             int color = switch (track.threatLevel()) {
                 case LatticeTrackEntry.THREAT_HOSTILE -> COLOR_HOSTILE;
                 case LatticeTrackEntry.THREAT_PLAYER -> COLOR_PLAYER;
                 default -> COLOR_NEUTRAL;
             };
+
+            float up = (float) (relX * upVec.x + relY * upVec.y + relZ * upVec.z);
+            float right = -(float) (relX * leftVec.x + relY * leftVec.y + relZ * leftVec.z);
 
             if (forward <= 0.08f) {
                 if (drawOffscreenArrows && track.threatLevel() == LatticeTrackEntry.THREAT_HOSTILE) {
@@ -410,53 +412,61 @@ public final class EagleEyeHudOverlay {
                 continue;
             }
 
-            float ndcX = right / (forward * halfWidth);
-            float ndcY = up / (forward * halfHeight);
-
-            if (ndcX < -1.02f || ndcX > 1.02f || ndcY < -1.02f || ndcY > 1.02f) {
-                if (drawOffscreenArrows && track.threatLevel() == LatticeTrackEntry.THREAT_HOSTILE) {
-                    drawEdgeIndicator(gui, font, ndcX, ndcY, false, width, height, color);
+            int sx;
+            int sy;
+            float[] vgProj = null;
+            try {
+                vgProj = dev.itsrealperson.vision_goggles.client.VisionHUDOverlay.projectWorldToGui(mc, wx, wy, wz, pt);
+            } catch (Throwable ignored) {
+            }
+            if (vgProj != null) {
+                if (vgProj[3] < 0.5f) {
+                    if (drawOffscreenArrows && track.threatLevel() == LatticeTrackEntry.THREAT_HOSTILE) {
+                        float ndcX = right / (forward * halfWidth);
+                        float ndcY = up / (forward * halfHeight);
+                        drawEdgeIndicator(gui, font, ndcX, ndcY, false, width, height, color);
+                    }
+                    continue;
                 }
-                continue;
+                sx = Math.round(vgProj[0]);
+                sy = Math.round(vgProj[1]);
+                distance = vgProj[2];
+            } else {
+                float ndcX = right / (forward * halfWidth);
+                float ndcY = up / (forward * halfHeight);
+                if (ndcX < -1.02f || ndcX > 1.02f || ndcY < -1.02f || ndcY > 1.02f) {
+                    if (drawOffscreenArrows && track.threatLevel() == LatticeTrackEntry.THREAT_HOSTILE) {
+                        drawEdgeIndicator(gui, font, ndcX, ndcY, false, width, height, color);
+                    }
+                    continue;
+                }
+                sx = Math.round((ndcX + 1.0f) * 0.5f * guiW);
+                sy = Math.round((1.0f - ndcY) * 0.5f * guiH);
             }
 
-            int sx = Math.round((ndcX + 1.0f) * 0.5f * guiW);
-            int sy = Math.round((1.0f - ndcY) * 0.5f * guiH);
             double dx = sx - centerX;
             double dy = sy - centerY;
             double cDistSq = dx * dx + dy * dy;
 
-            boolean isWarm = false;
-            if (liveEntity instanceof net.minecraft.world.entity.LivingEntity living) {
-                try {
-                    isWarm = dev.itsrealperson.vision_goggles.client.ThermalEntityPainter.emitsThermalHeat(living);
-                } catch (Throwable ignored) {
-                }
-            }
-
-            ProjectedTrack pt = new ProjectedTrack(track, sx, sy, distance, color, isWarm, cDistSq);
-            projected.add(pt);
+            ProjectedTrack ptTrack = new ProjectedTrack(track, sx, sy, distance, color, cDistSq);
+            projected.add(ptTrack);
             if (cDistSq < bestCenterDistSq) {
                 bestCenterDistSq = cDistSq;
-                focused = pt;
+                focused = ptTrack;
             }
         }
 
-        // Render peripheral targets first (compact bracket + mini HP bar + white-hot thermal pip for warm targets)
-        for (ProjectedTrack pt : projected) {
-            boolean isFocused = (pt == focused);
-            int boxHalf = Mth.clamp((int) (130.0 / Math.max(4.0, pt.distance)), 4, isFocused ? 13 : 9);
-            int drawColor = isFocused ? pt.color : ((pt.color & 0x00FFFFFF) | 0xCC000000);
-            drawBeveledTargetBox(gui, pt.sx, pt.sy, boxHalf, drawColor);
-            if (pt.warm) {
-                // Crisp EO-IR white-hot thermal core pip
-                gui.fill(pt.sx - 1, pt.sy - 1, pt.sx + 2, pt.sy + 2, 0xFFF4FAFF);
-            }
+        // Render peripheral targets (compact bracket + mini HP bar) and focused target (clean distance | HP)
+        for (ProjectedTrack p : projected) {
+            boolean isFocused = (p == focused);
+            int boxHalf = Mth.clamp((int) (130.0 / Math.max(4.0, p.distance)), 4, isFocused ? 13 : 9);
+            int drawColor = isFocused ? p.color : ((p.color & 0x00FFFFFF) | 0xCC000000);
+            drawBeveledTargetBox(gui, p.sx, p.sy, boxHalf, drawColor);
 
-            float hpRatio = Mth.clamp(pt.entry.healthPct(), 0.0f, 1.0f);
+            float hpRatio = Mth.clamp(p.entry.healthPct(), 0.0f, 1.0f);
             int barW = isFocused ? 18 : 12;
-            int barX = pt.sx - barW / 2;
-            int barY = pt.sy + boxHalf + 2;
+            int barX = p.sx - barW / 2;
+            int barY = p.sy + boxHalf + 2;
             gui.fill(barX - 1, barY - 1, barX + barW + 1, barY + 3, 0x99060A0F);
             int fillW = Math.max(1, Math.round(barW * hpRatio));
             int hpCol = hpRatio > 0.5f ? 0xFF39FF88 : (hpRatio > 0.25f ? 0xFFFFCC00 : 0xFFFF3B30);
@@ -464,14 +474,12 @@ public final class EagleEyeHudOverlay {
 
             if (isFocused) {
                 int hpPct = Math.round(hpRatio * 100.0f);
-                String prefix = pt.warm ? "[THERM]" : "[OPTIC]";
-                String tag = String.format("%s %.1fm | %d%%", prefix, pt.distance, hpPct);
-                int tagColor = pt.warm ? 0xFFF4FAFF : pt.color;
+                String tag = String.format("%.1fm | %d%%", p.distance, hpPct);
                 int tagW = font.width(tag);
-                int tx = Mth.clamp(pt.sx - tagW / 2, 4, width - tagW - 4);
-                int ty = Mth.clamp(pt.sy - boxHalf - 11, 22, height - 12);
+                int tx = Mth.clamp(p.sx - tagW / 2, 4, width - tagW - 4);
+                int ty = Mth.clamp(p.sy - boxHalf - 11, 22, height - 12);
                 gui.fill(tx - 2, ty - 1, tx + tagW + 2, ty + 9, 0xAA081016);
-                gui.drawString(font, tag, tx, ty, tagColor, false);
+                gui.drawString(font, tag, tx, ty, p.color, false);
             }
         }
     }
