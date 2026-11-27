@@ -341,7 +341,9 @@ public final class EagleEyeHudOverlay {
         Font font = mc.font;
         int centerX = width / 2;
         int centerY = height / 2;
-        int activeFpvId = DroneFpvClientController.isFpvActive() ? DroneFpvClientController.getActiveDroneId() : -1;
+        boolean inFpv = DroneFpvClientController.isFpvActive();
+        int activeFpvId = inFpv ? DroneFpvClientController.getActiveDroneId() : -1;
+        Entity fpvDroneEntity = inFpv ? DroneFpvClientController.getActiveDrone(mc) : null;
 
         record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, double centerDistSq) {}
         java.util.List<ProjectedTrack> projected = new java.util.ArrayList<>(tracks.size());
@@ -370,6 +372,24 @@ public final class EagleEyeHudOverlay {
             }
 
             float forward = (float) (relX * look.x + relY * look.y + relZ * look.z);
+            if (inFpv) {
+                // Strictly enforce frontal camera cone and real-time block LOS in FPV (zero X-Ray / zero lag)
+                if (forward / distance <= 0.55) {
+                    continue;
+                }
+                if (fpvDroneEntity != null) {
+                    net.minecraft.world.phys.HitResult los = mc.level.clip(new net.minecraft.world.level.ClipContext(
+                            camPos,
+                            new Vec3(wx, wy, wz),
+                            net.minecraft.world.level.ClipContext.Block.VISUAL,
+                            net.minecraft.world.level.ClipContext.Fluid.NONE,
+                            fpvDroneEntity
+                    ));
+                    if (los.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
+                        continue;
+                    }
+                }
+            }
             float up = (float) (relX * upVec.x + relY * upVec.y + relZ * upVec.z);
             float right = -(float) (relX * leftVec.x + relY * leftVec.y + relZ * leftVec.z);
 

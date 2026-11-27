@@ -18,6 +18,9 @@
   - Creado PostChain GLSL dedicado `shaders/post/uav_eo.json` + `program/uav_eo.{json,fsh}` (`DroneEoShaderManager`, `PostChainAccessor`) con estética militar EO/UAV (desaturación fría azul-pizarra de alto contraste, realce nocturno propio, grano CMOS, scanlines y RF glitch dinámico).
   - Eliminada la auto-vinculación al colocar el dron (`TacticalDroneItem`): ahora se vincula explícitamente con Clic Derecho sobre el dron usando el controlador, y tanto `LatticeTrackManager` como `EagleEyeHudOverlay` muestran únicamente objetivos del dron vinculado.
   - Añadido `FpvLocalPlayerMixin` para congelar el cuerpo y la cabeza del operador (`aiStep`, `setSprinting`, velocidad horizontal `0`) mientras pilota en FPV.
+- **Claridad Nocturna EO Real, Eliminación de Linterna del Dron y Escáner Sin X-Ray (#185):**
+  - Eliminado el emisor de linterna/foco IR del dron (`DroneFpvClientController.emitDroneIrSpots`) y activado el lightmap nocturno limpio durante FPV (`FpvVisionRendererSuppressMixin#shouldApplyNightVisionLight` -> `true`) combinado con `uav_eo.fsh` calibrado para máxima claridad nocturna azul-pizarra sin verde NVG.
+  - Exigido raycast real de oclusión `ClipContext.Block.VISUAL` + cono frontal de cámara (`dot > 0.55`) tanto en servidor (`TacticalDroneEntity#performLatticeScan`) como en cliente FPV (`EagleEyeHudOverlay#renderProjectedTracks`), eliminando el bypass X-Ray de `16m` y cualquier mob detrás de bloques o fuera de cámara.
 
 ## [1.0.0] - 2026-11-26
 ### Added

@@ -60,12 +60,6 @@ public final class DroneFpvClientController {
 
     private static void registerVisionGogglesHooks() {
         try {
-            VisionGogglesClientAPI.registerFrameLightEmitter(DroneFpvClientController::emitDroneIrSpots);
-        } catch (Throwable t) {
-            VisionTacticalEagleEye.LOGGER.warn("[EagleEye] Could not register IR frame light emitter: {}", t.toString());
-        }
-
-        try {
             VisionGogglesClientAPI.registerThermalEntityColorOverride(
                     DroneFpvClientController::shouldOverrideThermalColor,
                     DroneFpvClientController::getThermalOverrideColor
@@ -99,41 +93,6 @@ public final class DroneFpvClientController {
             return 0x00E5FF; // Tactical cyan signature
         }
         return 0xFF5500; // High-priority hostile signature
-    }
-
-    private static void emitDroneIrSpots(float partialTick) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null) {
-            return;
-        }
-        try {
-            if (!VisionGogglesClientAPI.isNightVisionActive()) {
-                return;
-            }
-        } catch (Throwable ignored) {
-            return;
-        }
-
-        AABB searchBox = mc.player.getBoundingBox().inflate(TacticalDroneEntity.MAX_RANGE);
-        List<TacticalDroneEntity> drones = mc.level.getEntitiesOfClass(
-                TacticalDroneEntity.class,
-                searchBox,
-                d -> d.isAlive() && d.getBattery() > 0.0f
-        );
-        for (TacticalDroneEntity drone : drones) {
-            Vec3 pos = drone.getPosition(partialTick).add(0.0, drone.getBbHeight() * 0.55, 0.0);
-            Vec3 look = drone.getViewVector(partialTick);
-            Vector3f gimbalPos = new Vector3f((float) pos.x, (float) pos.y, (float) pos.z);
-            Vector3f lookDir = new Vector3f((float) look.x, (float) look.y, (float) look.z);
-            VisionGogglesClientAPI.emitInfraredSpot(
-                    gimbalPos,
-                    lookDir,
-                    new Vector3f(0.45f, 1.0f, 0.55f),
-                    0.42f,
-                    42.0f,
-                    1.35f
-            );
-        }
     }
 
     public static void onDroneLinkPacket(int droneEntityId, boolean linked, float empFlashIntensity) {

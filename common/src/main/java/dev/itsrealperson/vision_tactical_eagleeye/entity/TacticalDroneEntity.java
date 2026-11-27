@@ -388,16 +388,22 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
 
         List<LivingEntity> detected = new ArrayList<>();
         Vec3 droneEye = this.getEyePosition();
+        Vec3 droneLook = this.getViewVector(1.0f).normalize();
         for (LivingEntity target : candidates) {
-            double distSqr = this.distanceToSqr(target);
-            if (distSqr <= 16.0 * 16.0) {
-                detected.add(target);
+            Vec3 targetCenter = target.getBoundingBox().getCenter();
+            Vec3 toTarget = targetCenter.subtract(droneEye);
+            if (toTarget.lengthSqr() < 0.25) {
                 continue;
             }
+            // Require target to be strictly inside the drone's frontal camera cone
+            if (droneLook.dot(toTarget.normalize()) <= 0.55) {
+                continue;
+            }
+            // Strict visual block occlusion raycast (no X-Ray through walls/hills)
             HitResult los = this.level().clip(new ClipContext(
                     droneEye,
-                    target.getEyePosition(),
-                    ClipContext.Block.COLLIDER,
+                    targetCenter,
+                    ClipContext.Block.VISUAL,
                     ClipContext.Fluid.NONE,
                     this
             ));

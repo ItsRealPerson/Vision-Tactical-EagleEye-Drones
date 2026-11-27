@@ -26,9 +26,10 @@ public abstract class FpvVisionRendererSuppressMixin {
     }
 
     @Inject(method = "shouldApplyNightVisionLight", at = @At("HEAD"), cancellable = true, remap = false)
-    private static void vision_tactical_eagleeye$suppressNvgLightInFpv(CallbackInfoReturnable<Boolean> cir) {
+    private static void vision_tactical_eagleeye$enableClearEoNightLightInFpv(CallbackInfoReturnable<Boolean> cir) {
         if (DroneFpvClientController.isFpvActive()) {
-            cir.setReturnValue(false);
+            // Enable clean fullbright night lightmap for the drone's EO/UAV camera (green NVG shader is suppressed separately)
+            cir.setReturnValue(true);
         }
     }
 
