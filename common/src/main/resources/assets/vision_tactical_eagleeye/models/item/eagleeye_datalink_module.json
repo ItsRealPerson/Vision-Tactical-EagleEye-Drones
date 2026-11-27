@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "vision_tactical_eagleeye:item/eagleeye_datalink_module"
+  }
+}

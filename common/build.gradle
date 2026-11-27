@@ -1,0 +1,18 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    modImplementation "dev.architectury:architectury:$rootProject.architectury_version"
+    modApi "me.shedaniel.cloth:cloth-config:$rootProject.cloth_config_version"
+
+    // GeckoLib 4
+    modCompileOnly "software.bernie.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+
+    // Vision Goggles 2.0.0 Core API
+    modCompileOnly "dev.itsrealperson:vision-goggles-common:${rootProject.vision_goggles_version}"
+
+    // JEI Common API (Compile only)
+    modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version}-common-api:${rootProject.jei_version}"
+}

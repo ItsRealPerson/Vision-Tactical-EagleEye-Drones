@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "vision_tactical_eagleeye",
+  "version": "${version}",
+  "name": "Vision Tactical: EagleEye & Drones",
+  "description": "Anduril EagleEye & Lattice OS tactical AR data-link HUD and autonomous FPV quadcopter micro-drones with modular payloads (Recon, EMP, HE) for Vision Goggles.",
+  "authors": [
+    "ItsRealPerson"
+  ],
+  "contact": {
+    "homepage": ""
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/vision_tactical_eagleeye/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.itsrealperson.vision_tactical_eagleeye.fabric.VisionTacticalEagleEyeFabric"
+    ],
+    "client": [
+      "dev.itsrealperson.vision_tactical_eagleeye.fabric.VisionTacticalEagleEyeFabricClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "architectury": ">=9.2.14",
+    "fabric-api": "*",
+    "geckolib": ">=4.4",
+    "vision_goggles": ">=2.0.0"
+  },
+  "mixins": [
+    "vision_tactical_eagleeye.mixins.json"
+  ],
+  "suggests": {
+    "cloth-config": "*"
+  }
+}

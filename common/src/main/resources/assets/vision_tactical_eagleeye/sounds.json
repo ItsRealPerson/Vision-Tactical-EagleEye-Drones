@@ -1,0 +1,68 @@
+{
+  "drone_hum": {
+    "subtitle": "subtitles.vision_tactical_eagleeye.drone_hum",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 1.75,
+        "volume": 0.4
+      }
+    ]
+  },
+  "drone_deploy": {
+    "subtitle": "subtitles.vision_tactical_eagleeye.drone_deploy",
+    "sounds": [
+      {
+        "name": "minecraft:block.piston.extend",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.7
+      }
+    ]
+  },
+  "lattice_link": {
+    "subtitle": "subtitles.vision_tactical_eagleeye.lattice_link",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.75
+      }
+    ]
+  },
+  "lattice_scan": {
+    "subtitle": "subtitles.vision_tactical_eagleeye.lattice_scan",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.mirror_move",
+        "type": "event",
+        "pitch": 1.45,
+        "volume": 0.85
+      }
+    ]
+  },
+  "emp_blast": {
+    "subtitle": "subtitles.vision_tactical_eagleeye.emp_blast",
+    "sounds": [
+      {
+        "name": "minecraft:entity.lightning_bolt.impact",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.85
+      }
+    ]
+  },
+  "payload_arm": {
+    "subtitle": "subtitles.vision_tactical_eagleeye.payload_arm",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_trapdoor.close",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ]
+  }
+}

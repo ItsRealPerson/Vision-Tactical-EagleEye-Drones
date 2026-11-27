@@ -1,0 +1,51 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "GNU GPL 3.0"
+
+[[mixins]]
+config = "vision_tactical_eagleeye.mixins.json"
+
+[[mods]]
+modId = "vision_tactical_eagleeye"
+version = "${version}"
+displayName = "Vision Tactical: EagleEye & Drones"
+authors = "ItsRealPerson"
+description = '''
+Anduril EagleEye & Lattice OS tactical AR data-link HUD and autonomous FPV quadcopter micro-drones with modular payloads (Recon, EMP, HE) for Vision Goggles.
+'''
+logoFile = "assets/vision_tactical_eagleeye/icon.png"
+
+[[dependencies.vision_tactical_eagleeye]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.vision_tactical_eagleeye]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.vision_tactical_eagleeye]]
+modId = "architectury"
+mandatory = true
+versionRange = "[9.2.14,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.vision_tactical_eagleeye]]
+modId = "geckolib"
+mandatory = true
+versionRange = "[4.4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.vision_tactical_eagleeye]]
+modId = "vision_goggles"
+mandatory = true
+versionRange = "[2.0.0,)"
+ordering = "AFTER"
+side = "BOTH"

@@ -1,0 +1,13 @@
+.gradle/
+build/
+run/
+out/
+.idea/
+*.iml
+*.log
+.agyignore
+AGENTS.md
+docs/
+scripts/
+.agent/
+models_src/

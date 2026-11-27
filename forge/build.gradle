@@ -1,0 +1,81 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+loom {
+    forge {
+        mixinConfig "vision_tactical_eagleeye.mixins.json"
+    }
+}
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:$rootProject.forge_version"
+    modImplementation "dev.architectury:architectury-forge:$rootProject.architectury_version"
+
+    // Curios API
+    modApi "top.theillusivec4.curios:curios-forge:5.4.3+1.20.1"
+    modApi "me.shedaniel.cloth:cloth-config-forge:$rootProject.cloth_config_version"
+
+    // GeckoLib 4
+    modImplementation "software.bernie.geckolib:geckolib-forge-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+
+    // Vision Goggles 2.0.0 Forge
+    modImplementation "dev.itsrealperson:vision-goggles-forge:${rootProject.vision_goggles_version}"
+
+    // JEI Forge API (Compile only)
+    modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version}-forge-api:${rootProject.jei_version}"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionForge')
+}
+
+processResources {
+    inputs.property 'version', project.version
+
+    filesMatching('META-INF/mods.toml') {
+        expand version: project.version
+    }
+}
+
+shadowJar {
+    exclude "fabric.mod.json"
+    exclude "architectury.common.json"
+    exclude "META-INF/services/**"
+
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+
+    relocate 'org.luaj', 'dev.itsrealperson.vision_goggles.shadow.org.luaj'
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    dependsOn shadowJar
+    archiveClassifier = null
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I I",
+    "CRC",
+    "IGI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "G": {
+      "item": "minecraft:spyglass"
+    }
+  },
+  "result": {
+    "item": "vision_tactical_eagleeye:tactical_drone",
+    "count": 1
+  }
+}
