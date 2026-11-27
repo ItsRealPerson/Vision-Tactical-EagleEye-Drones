@@ -42,11 +42,4 @@ public abstract class FpvLocalPlayerMixin {
         self.setDeltaMovement(0.0, vel.y, 0.0);
         self.yHeadRot = self.yBodyRot;
     }
-
-    @Inject(method = "setSprinting", at = @At("HEAD"), cancellable = true)
-    private void vision_tactical_eagleeye$blockSprintInFpv(boolean sprinting, CallbackInfo ci) {
-        if (sprinting && DroneFpvClientController.isFpvActive()) {
-            ci.cancel();
-        }
-    }
 }
