@@ -27,6 +27,7 @@
 - **Rotación FPV sin Jitter, HUD Limpio sin `[THERM]`/`[OPTIC]` y Proyección Directa `VisionHUDOverlay` (#194):**
   - `TacticalDroneEntity#lerpTo` y `DroneFpvClientController#handleMouseTurn` mantienen la rotación FPV 100% autoritativa en cliente (y directa en servidor sin `rotLerp(0.45f)`), eliminando el snap-back/movimiento raro al girar el dron.
   - Eliminados `[THERM]` y `[OPTIC]` de `EagleEyeHudOverlay` (etiqueta limpia `X.Xm | HP%`) y conectada la proyección directamente a `VisionHUDOverlay.projectWorldToGui` con `mc.getFrameTime()` para 0 desfase al caminar/moverse con el jugador.
+- **Compensación de Ojo de Pez NVG/Térmico solo en Modo Operador (`EagleEyeHudOverlay` #198):** En modo operador delega a `VisionHUDOverlay.projectWorldToGui` (con inversión exacta de barril `0.45·r² + 0.82`); en modo FPV del dron mantiene proyección lineal pura acorde a `uav_eo.fsh`.
 
 ## [1.0.0] - 2026-11-26
 ### Added

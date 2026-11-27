@@ -415,9 +415,11 @@ public final class EagleEyeHudOverlay {
             int sx;
             int sy;
             float[] vgProj = null;
-            try {
-                vgProj = dev.itsrealperson.vision_goggles.client.VisionHUDOverlay.projectWorldToGui(mc, wx, wy, wz, pt);
-            } catch (Throwable ignored) {
+            if (!inFpv) {
+                try {
+                    vgProj = dev.itsrealperson.vision_goggles.client.VisionHUDOverlay.projectWorldToGui(mc, wx, wy, wz, pt);
+                } catch (Throwable ignored) {
+                }
             }
             if (vgProj != null) {
                 if (vgProj[3] < 0.5f) {
