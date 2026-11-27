@@ -126,7 +126,7 @@ public final class EagleEyeHudOverlay {
     private static void renderOperatorArHud(GuiGraphics gui, Minecraft mc, float partialTicks, int width, int height) {
         Font font = mc.font;
         int droneCount = DroneFpvClientController.getActiveDroneCount();
-        int batPct = Math.round(DroneFpvClientController.getPrimaryBatteryPct());
+        int batPct = Math.round(DroneFpvClientController.getPrimaryBatteryPct() * 100.0f);
         String modeStr = DroneFpvClientController.isPrimaryAutoHover() ? "AUTO-HOVER" : "MANUAL";
         List<LatticeTrackEntry> tracks = DroneFpvClientController.getTracks();
 
@@ -157,6 +157,9 @@ public final class EagleEyeHudOverlay {
         int cx = width / 2;
         int cy = height / 2;
 
+        // 0. Military EO/UAV Camera Optical Finish (cool slate-blue wash + subtle scanlines + optical edge vignette, distinct from green NVG)
+        renderDroneEoCameraOptics(gui, width, height);
+
         // 1. AR Lattice boxes over tracked entities in drone FOV
         renderProjectedTracks(gui, mc, DroneFpvClientController.getTracks(), partialTicks, width, height, false);
 
@@ -164,11 +167,11 @@ public final class EagleEyeHudOverlay {
         float yaw = Mth.wrapDegrees(drone.getViewYRot(partialTicks));
         int headingDeg = Math.round((yaw + 360.0f) % 360.0f);
         String cardinal = COMPASS_DIRS[Math.round(headingDeg / 45.0f) % 8];
-        String compassText = String.format("HDG %03d [%s]  //  LATTICE FPV LINK", headingDeg, cardinal);
+        String compassText = String.format("HDG %03d [%s]  //  EO-CAM UAV LINK", headingDeg, cardinal);
         int compW = font.width(compassText) + 18;
         gui.fill(cx - compW / 2, 6, cx + compW / 2, 20, COLOR_BG_PANEL);
-        gui.renderOutline(cx - compW / 2, 6, compW, 14, COLOR_HUD_GREEN);
-        gui.drawCenteredString(font, compassText, cx, 9, COLOR_HUD_GREEN);
+        gui.renderOutline(cx - compW / 2, 6, compW, 14, COLOR_NEUTRAL);
+        gui.drawCenteredString(font, compassText, cx, 9, COLOR_NEUTRAL);
 
         // 3. Central Gimbal Reticle + Dynamic Pitch/Roll Ladder
         float pitchOffset = (drone.getViewXRot(partialTicks) + drone.clientTiltPitch * 0.45f) * 0.65f;
@@ -176,22 +179,23 @@ public final class EagleEyeHudOverlay {
         int ladderY = Mth.clamp((int) (cy + pitchOffset), 36, height - 36);
         int rollShiftY = (int) (Math.sin(rollRad) * 26.0f);
 
-        // Crosshair center
-        gui.fill(cx - 10, cy, cx - 3, cy + 1, COLOR_HUD_GREEN);
-        gui.fill(cx + 4, cy, cx + 11, cy + 1, COLOR_HUD_GREEN);
-        gui.fill(cx, cy - 8, cx + 1, cy - 3, COLOR_HUD_GREEN);
-        gui.fill(cx, cy + 4, cx + 1, cy + 9, COLOR_HUD_GREEN);
+        // Crosshair center (ice-cyan EO reticle)
+        int eoReticle = 0xDDF0FAFF;
+        gui.fill(cx - 10, cy, cx - 3, cy + 1, eoReticle);
+        gui.fill(cx + 4, cy, cx + 11, cy + 1, eoReticle);
+        gui.fill(cx, cy - 8, cx + 1, cy - 3, eoReticle);
+        gui.fill(cx, cy + 4, cx + 1, cy + 9, eoReticle);
 
         // Artificial horizon ticks tilted by roll
-        gui.fill(cx - 34, ladderY - rollShiftY, cx - 16, ladderY - rollShiftY + 1, 0xCC39FF88);
-        gui.fill(cx + 17, ladderY + rollShiftY, cx + 35, ladderY + rollShiftY + 1, 0xCC39FF88);
-        gui.fill(cx - 22, ladderY - 14, cx - 14, ladderY - 13, 0x8839FF88);
-        gui.fill(cx + 15, ladderY - 14, cx + 23, ladderY - 13, 0x8839FF88);
-        gui.fill(cx - 22, ladderY + 14, cx - 14, ladderY + 15, 0x8839FF88);
-        gui.fill(cx + 15, ladderY + 14, cx + 23, ladderY + 15, 0x8839FF88);
+        gui.fill(cx - 34, ladderY - rollShiftY, cx - 16, ladderY - rollShiftY + 1, 0xCC7AD8FF);
+        gui.fill(cx + 17, ladderY + rollShiftY, cx + 35, ladderY + rollShiftY + 1, 0xCC7AD8FF);
+        gui.fill(cx - 22, ladderY - 14, cx - 14, ladderY - 13, 0x887AD8FF);
+        gui.fill(cx + 15, ladderY - 14, cx + 23, ladderY - 13, 0x887AD8FF);
+        gui.fill(cx - 22, ladderY + 14, cx - 14, ladderY + 15, 0x887AD8FF);
+        gui.fill(cx + 15, ladderY + 14, cx + 23, ladderY + 15, 0x887AD8FF);
 
         // Corner FPV frame brackets
-        drawCornerBrackets(gui, 14, 14, width - 28, height - 28, 12, 0xAA00E5FF);
+        drawCornerBrackets(gui, 14, 14, width - 28, height - 28, 12, 0xBB7AD8FF);
 
         // 4. Left Telemetry Column (Altitude, Speed, Range)
         double alt = drone.getY();
@@ -201,24 +205,25 @@ public final class EagleEyeHudOverlay {
         int leftX = 20;
         int colY = cy - 36;
         gui.fill(leftX - 4, colY - 4, leftX + 94, colY + 42, COLOR_BG_PANEL);
-        gui.drawString(font, String.format("ALT  %6.1f m", alt), leftX, colY, COLOR_HUD_GREEN, false);
-        gui.drawString(font, String.format("SPD  %6.1f m/s", spd), leftX, colY + 12, COLOR_HUD_GREEN, false);
+        gui.drawString(font, String.format("ALT  %6.1f m", alt), leftX, colY, 0xFFD6F0FF, false);
+        gui.drawString(font, String.format("SPD  %6.1f m/s", spd), leftX, colY + 12, 0xFFD6F0FF, false);
         gui.drawString(font, String.format("RNG  %6.1f m", rng), leftX, colY + 24,
-                rng > 110.0 ? COLOR_HOSTILE : COLOR_HUD_GREEN, false);
+                rng > 110.0 ? COLOR_HOSTILE : 0xFFD6F0FF, false);
 
         // 5. Right Telemetry Column (Battery, Signal/RSSI, Mode)
-        float batPct = drone.getBatteryPct();
+        float batRatio = Mth.clamp(drone.getBatteryPct(), 0.0f, 1.0f);
+        int batPctInt = Math.round(batRatio * 100.0f);
         float signal = drone.getSignalQuality();
         int linkPct = Math.round(signal * 100.0f);
         int rssiDbm = Math.round(-98.0f + signal * 56.0f);
-        int batColor = batPct > 30.0f ? COLOR_HUD_GREEN : (batPct > 15.0f ? COLOR_PLAYER : COLOR_HOSTILE);
+        int batColor = batRatio > 0.30f ? COLOR_HUD_GREEN : (batRatio > 0.15f ? COLOR_PLAYER : COLOR_HOSTILE);
 
         int rightX = width - 122;
         gui.fill(rightX - 4, colY - 4, width - 16, colY + 52, COLOR_BG_PANEL);
-        gui.drawString(font, String.format("BAT  %3d%%", Math.round(batPct)), rightX, colY, batColor, false);
+        gui.drawString(font, String.format("BAT  %3d%%", batPctInt), rightX, colY, batColor, false);
         // Battery bar
         gui.fill(rightX, colY + 10, rightX + 90, colY + 14, 0x66222222);
-        gui.fill(rightX, colY + 10, rightX + Math.round(90.0f * Mth.clamp(batPct / 100.0f, 0.0f, 1.0f)), colY + 14, batColor);
+        gui.fill(rightX, colY + 10, rightX + Math.round(90.0f * batRatio), colY + 14, batColor);
 
         int sigColor = signal >= 0.55f ? COLOR_NEUTRAL : (signal >= 0.25f ? COLOR_PLAYER : COLOR_HOSTILE);
         gui.drawString(font, String.format("LINK %3d%% %ddBm", linkPct, rssiDbm), rightX, colY + 19, sigColor, false);
@@ -239,6 +244,28 @@ public final class EagleEyeHudOverlay {
         // 7. Progressive Analog RF Interference
         if (signal < 0.80f) {
             renderAnalogInterference(gui, mc, signal, width, height);
+        }
+    }
+
+    private static void renderDroneEoCameraOptics(GuiGraphics gui, int width, int height) {
+        // Cool slate-blue EO sensor wash (clearly distinct from NVG phosphor green)
+        gui.fill(0, 0, width, height, 0x1C102436);
+
+        // Subtle EO optical camera scanlines (every 3px)
+        for (int y = 0; y < height; y += 3) {
+            gui.fill(0, y, width, y + 1, 0x10081420);
+        }
+
+        // Soft 4-step optical bezel vignette along screen edges
+        int[] alphas = {0x44, 0x2C, 0x18, 0x0A};
+        int band = 8;
+        for (int i = 0; i < alphas.length; i++) {
+            int col = (alphas[i] << 24) | 0x050C14;
+            int o = i * band;
+            gui.fill(o, o, width - o, o + band, col);
+            gui.fill(o, height - o - band, width - o, height - o, col);
+            gui.fill(o, o + band, o + band, height - o - band, col);
+            gui.fill(width - o - band, o + band, width - o, height - o - band, col);
         }
     }
 
@@ -304,12 +331,13 @@ public final class EagleEyeHudOverlay {
         }
         float fovRad = (float) Math.toRadians(fovDeg);
         float halfHeight = (float) Math.tan(fovRad * 0.5f);
-        float aspectRatio = (float) mc.getWindow().getScreenWidth() / Math.max(1.0f, (float) mc.getWindow().getScreenHeight());
+        float aspectRatio = (float) width / Math.max(1.0f, (float) height);
         float halfWidth = halfHeight * aspectRatio;
 
         Font font = mc.font;
         int centerX = width / 2;
         int centerY = height / 2;
+        int activeFpvId = DroneFpvClientController.isFpvActive() ? DroneFpvClientController.getActiveDroneId() : -1;
 
         record ProjectedTrack(LatticeTrackEntry entry, int sx, int sy, double distance, int color, double centerDistSq) {}
         java.util.List<ProjectedTrack> projected = new java.util.ArrayList<>(tracks.size());
@@ -317,17 +345,17 @@ public final class EagleEyeHudOverlay {
         double bestCenterDistSq = 58.0 * 58.0;
 
         for (LatticeTrackEntry track : tracks) {
-            double wx = track.x();
-            double wy = track.y();
-            double wz = track.z();
-
-            Entity liveEntity = mc.level.getEntity(track.entityId());
-            if (liveEntity != null && liveEntity.isAlive()) {
-                Vec3 interp = liveEntity.getPosition(partialTicks);
-                wx = interp.x;
-                wy = interp.y + liveEntity.getBbHeight() * 0.55;
-                wz = interp.z;
+            if (activeFpvId >= 0 && track.entityId() == activeFpvId) {
+                continue;
             }
+            Entity liveEntity = mc.level.getEntity(track.entityId());
+            if (liveEntity == null || !liveEntity.isAlive()) {
+                continue;
+            }
+            Vec3 interp = liveEntity.getPosition(partialTicks);
+            double wx = interp.x;
+            double wy = interp.y + liveEntity.getBbHeight() * 0.55;
+            double wz = interp.z;
 
             double relX = wx - camPos.x;
             double relY = wy - camPos.y;

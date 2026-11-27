@@ -1,6 +1,7 @@
 package dev.itsrealperson.vision_tactical_eagleeye.entity;
 
 import dev.itsrealperson.vision_tactical_eagleeye.item.DronePayloadItem;
+import dev.itsrealperson.vision_tactical_eagleeye.item.LatticeControllerItem;
 import dev.itsrealperson.vision_tactical_eagleeye.item.TacticalDroneItem;
 import dev.itsrealperson.vision_tactical_eagleeye.network.LatticeTrackManager;
 import dev.itsrealperson.vision_tactical_eagleeye.network.ModNetworking;
@@ -302,7 +303,7 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
             updateSignalQuality();
         }
 
-        if (this.tickCount % 10 == 0 && getBattery() > 0.0f && (isAutoHover() || isFpvLinked())) {
+        if (this.tickCount % 5 == 0 && getBattery() > 0.0f && (isAutoHover() || isFpvLinked())) {
             performLatticeScan();
         }
     }
@@ -485,6 +486,7 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
                     setFpvLinked(false);
                     ModNetworking.sendFpvLinkPacket(sp, this.getId(), false, 0.0f);
                 }
+                LatticeControllerItem.clearLinkedDroneInInventory(player, this.getId());
                 ItemStack packed = new ItemStack(ModItems.TACTICAL_DRONE.get());
                 TacticalDroneItem.setBattery(packed, getBattery());
                 TacticalDroneItem.setPayloadType(packed, getPayloadType());
@@ -494,6 +496,34 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
                 this.level().playSound(null, getX(), getY(), getZ(),
                         SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7f, 1.1f);
                 this.discard();
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        if (TacticalDroneItem.isVisionBattery(held) && getBattery() < MAX_BATTERY) {
+            if (!this.level().isClientSide) {
+                setBattery(MAX_BATTERY);
+                if (!player.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
+                if (this.level() instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 0.3, getZ(), 14, 0.3, 0.2, 0.3, 0.05);
+                }
+                this.level().playSound(null, getX(), getY(), getZ(),
+                        SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8f, 1.35f);
+                player.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.battery_recharged")
+                        .withStyle(ChatFormatting.AQUA), true);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        if (held.getItem() instanceof LatticeControllerItem) {
+            if (!this.level().isClientSide) {
+                LatticeControllerItem.setLinkedDrone(held, this);
+                this.level().playSound(null, getX(), getY(), getZ(),
+                        ModSounds.LATTICE_LINK.get(), SoundSource.PLAYERS, 0.85f, 1.2f);
+                player.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.drone_linked", this.getId())
+                        .withStyle(ChatFormatting.GREEN), true);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -532,9 +562,13 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     public void die(DamageSource damageSource) {
-        if (!this.level().isClientSide && isFpvLinked() && getOwnerPlayer() instanceof ServerPlayer sp) {
-            setFpvLinked(false);
-            ModNetworking.sendFpvLinkPacket(sp, this.getId(), false, 0.0f);
+        if (!this.level().isClientSide) {
+            Player owner = getOwnerPlayer();
+            LatticeControllerItem.clearLinkedDroneInInventory(owner, this.getId());
+            if (isFpvLinked() && owner instanceof ServerPlayer sp) {
+                setFpvLinked(false);
+                ModNetworking.sendFpvLinkPacket(sp, this.getId(), false, 0.0f);
+            }
         }
         super.die(damageSource);
     }

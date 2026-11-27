@@ -6,14 +6,20 @@ import dev.itsrealperson.vision_tactical_eagleeye.registry.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -37,6 +43,15 @@ import java.util.function.Supplier;
 public class TacticalDroneItem extends Item implements GeoItem {
     public static final String TAG_BATTERY = "Battery";
     public static final String TAG_PAYLOAD = "PayloadType";
+    public static final ResourceLocation NVG_BATTERY_ID = new ResourceLocation("vision_goggles", "nvg_battery");
+
+    public static boolean isVisionBattery(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return NVG_BATTERY_ID.equals(key);
+    }
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final Supplier<Object> renderProvider = new Supplier<Object>() {
@@ -116,12 +131,43 @@ public class TacticalDroneItem extends Item implements GeoItem {
         drone.setPayloadType(getPayloadType(stack));
         drone.setAutoHover(true);
         level.addFreshEntity(drone);
+        LatticeControllerItem.linkControllerInInventory(player, drone);
 
         level.playSound(null, spawnPos.x, spawnPos.y, spawnPos.z,
                 ModSounds.DRONE_DEPLOY.get(), SoundSource.PLAYERS, 0.85f, 1.1f);
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
         }
+    }
+
+    @Override
+    public boolean overrideOtherStackedOnMe(ItemStack droneStack, ItemStack otherStack, Slot slot, ClickAction action,
+                                            Player player, SlotAccess access) {
+        if (action == ClickAction.SECONDARY && isVisionBattery(otherStack)
+                && getBattery(droneStack) < TacticalDroneEntity.MAX_BATTERY) {
+            setBattery(droneStack, TacticalDroneEntity.MAX_BATTERY);
+            if (!player.getAbilities().instabuild) {
+                otherStack.shrink(1);
+            }
+            player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.7f, 1.35f);
+            return true;
+        }
+        return super.overrideOtherStackedOnMe(droneStack, otherStack, slot, action, player, access);
+    }
+
+    @Override
+    public boolean overrideStackedOnOther(ItemStack droneStack, Slot slot, ClickAction action, Player player) {
+        ItemStack otherStack = slot.getItem();
+        if (action == ClickAction.SECONDARY && isVisionBattery(otherStack)
+                && getBattery(droneStack) < TacticalDroneEntity.MAX_BATTERY) {
+            setBattery(droneStack, TacticalDroneEntity.MAX_BATTERY);
+            if (!player.getAbilities().instabuild) {
+                otherStack.shrink(1);
+            }
+            player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.7f, 1.35f);
+            return true;
+        }
+        return super.overrideStackedOnOther(droneStack, slot, action, player);
     }
 
     @Override

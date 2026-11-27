@@ -39,5 +39,9 @@
   "item.vision_tactical_eagleeye.lattice_fpv_controller.desc2": "FPV bez opóźnień i trybu Auto-Hover.",
   "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc2": "odblokować śledzenie AR EagleEye z dronów.",
   "item.vision_tactical_eagleeye.drone_payload_emp.desc2": "wrogów i oślepia pobliskie NVG.",
-  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "precyzyjnych uderzeń kinetycznych."
+  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "precyzyjnych uderzeń kinetycznych.",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.linked": "Linked: Drone #%s (%s, %s, %s)",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.unlinked": "[UNLINKED]",
+  "message.vision_tactical_eagleeye.drone_linked": "[LATTICE] Drone #%s linked.",
+  "message.vision_tactical_eagleeye.battery_recharged": "[LATTICE] Drone battery recharged to 100%."
 }

@@ -10,6 +10,7 @@
     "client.FpvGameRendererMixin",
     "client.FpvGuiMixin",
     "client.FpvInventoryMixin",
+    "client.FpvVisionShaderSuppressMixin",
     "client.GameRendererAccessor",
     "client.KeyboardInputFpvMixin",
     "client.LocalPlayerTurnMixin",

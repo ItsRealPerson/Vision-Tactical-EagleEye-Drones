@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "vision_tactical_eagleeye:tactical_drone"
+    },
+    {
+      "item": "vision_goggles:nvg_battery"
+    }
+  ],
+  "result": {
+    "item": "vision_tactical_eagleeye:tactical_drone",
+    "count": 1
+  }
+}

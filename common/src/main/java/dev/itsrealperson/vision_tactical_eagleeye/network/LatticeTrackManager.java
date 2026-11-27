@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Server-authoritative Lattice OS track database and periodic telemetry broadcaster.
  */
 public final class LatticeTrackManager {
-    private static final int DEFAULT_TRACK_TTL_TICKS = 45;
-    private static final int SYNC_INTERVAL_TICKS = 10;
+    private static final int DEFAULT_TRACK_TTL_TICKS = 10;
+    private static final int SYNC_INTERVAL_TICKS = 5;
 
     private static final Map<UUID, Map<Integer, TimedTrack>> PLAYER_TRACKS = new ConcurrentHashMap<>();
     private static int serverTickCounter;
@@ -42,13 +42,15 @@ public final class LatticeTrackManager {
             return;
         }
         long now = owner.level().getGameTime();
-        long expire = now + Math.max(15, durationTicks);
+        long expire = now + Math.max(8, durationTicks);
         Map<Integer, TimedTrack> map = PLAYER_TRACKS.computeIfAbsent(owner.getUUID(), k -> new ConcurrentHashMap<>());
+        java.util.Set<Integer> seenNow = new java.util.HashSet<>(detectedEntities.size());
 
         for (LivingEntity target : detectedEntities) {
             if (!target.isAlive() || target.getUUID().equals(owner.getUUID())) {
                 continue;
             }
+            seenNow.add(target.getId());
             int threat = classifyThreat(target);
             Vec3 vel = target.getDeltaMovement();
             float maxHp = Math.max(1.0f, target.getMaxHealth());
@@ -73,8 +75,20 @@ public final class LatticeTrackManager {
             );
 
             TimedTrack existing = map.get(target.getId());
-            long mergedExpire = existing != null ? Math.max(existing.expireGameTick(), expire) : expire;
+            long mergedExpire = (durationTicks > DEFAULT_TRACK_TTL_TICKS && existing != null)
+                    ? Math.max(existing.expireGameTick(), expire)
+                    : expire;
             map.put(target.getId(), new TimedTrack(entry, mergedExpire));
+        }
+
+        // Immediately prune regular LOS tracks from this drone that are no longer visible (preserve long Recon Pulse tracks)
+        if (durationTicks <= DEFAULT_TRACK_TTL_TICKS) {
+            int droneId = drone.getId();
+            map.entrySet().removeIf(e ->
+                    e.getValue().entry().droneId() == droneId
+                            && !seenNow.contains(e.getKey())
+                            && (e.getValue().expireGameTick() - now) <= DEFAULT_TRACK_TTL_TICKS
+            );
         }
     }
 

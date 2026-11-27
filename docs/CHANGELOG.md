@@ -7,6 +7,12 @@
 - **Creative Tab y Tooltips Compactos (16 idiomas):** Título acortado a `"Vision Tactical: EagleEye"` en todos los idiomas y tooltips largos divididos en 2 líneas cortas.
 - **Modo FPV Limpio y Bloqueo de Inventario (`FpvGameRendererMixin`, `FpvGuiMixin`, `FpvInventoryMixin`, `MinecraftCameraMixin`, `EagleEyeHudOverlay`):** Cancelado `GameRenderer#renderItemInHand` en cámara FPV (sin brazo ni armas TaCZ), ocultadas hotbar/barras vanilla, bloqueados scroll/teclas `1..9`, inventario (`E`), drop (`Q`) y uso/ataque mientras se pilota el dron, y limpiadas las etiquetas `[TGT-xxx]` en pantalla (corchete compacto + barra HP en objetivos periféricos, etiqueta completa `[UAV]` solo en el objetivo central).
 - **Guardas Estrictas del HUD AR Operador (`EagleEyeModuleItem`, `EagleEyeHudOverlay`):** El overlay AR fuera de FPV exige obligatoriamente las 3 condiciones simultáneas: gafas equipadas y encendidas (`isVisionActive`), módulo `eagleeye_datalink_module` instalado en esas gafas (`hasModule`) y al menos un dron aliado vivo con batería en rango (eliminado el bypass de sostener el controlador o tener un dron sin módulo).
+- **Render 3D en Forge, Recarga `nvg_battery`, Feedback de Vinculación, Proyección Exacta y Vista EO/UAV (#175):**
+  - Añadido `ForgeItemMixin` (`IClientItemExtensions#getCustomRenderer`) para que `TacticalDroneItemRenderer` renderice el dron 3D en inventario/mano en Forge (corrigiendo el ítem invisible).
+  - Corregido el bug de `BAT 1%` (`getBatteryPct() * 100`) y añadida recarga con `vision_goggles:nvg_battery` (clic derecho sobre dron desplegado, clic derecho en inventario y receta `tactical_drone_recharge.json`).
+  - Añadido estado NBT de vinculación en `LatticeControllerItem` (`isFoil`, tooltip verde `Vinculado: Dron #<id> (X, Y, Z)` o rojo `[SIN VINCULAR]` y mensaje `[LATTICE] Dron #<id> vinculado`).
+  - Reducido el TTL de objetivos a `10` ticks (`0.5s`) con poda inmediata al perder línea de visión (`5` ticks de escaneo/sync) y proyección 3D→2D exacta con relación de aspecto GUI y `getPosition(partialTicks)`.
+  - Añadido `FpvVisionShaderSuppressMixin` para suprimir el shader verde NVG durante el modo FPV y renderizar la cámara militar EO/UAV propia (tinte azul-pizarra frío, scanlines sutiles, viñeta óptica y retícula EO cian).
 
 ## [1.0.0] - 2026-11-26
 ### Added

@@ -39,5 +39,9 @@
   "item.vision_tactical_eagleeye.lattice_fpv_controller.desc2": "FPV sin retardo y control Auto-Hover.",
   "item.vision_tactical_eagleeye.eagleeye_datalink_module.desc2": "el rastreo AR EagleEye desde tus drones.",
   "item.vision_tactical_eagleeye.drone_payload_emp.desc2": "hostiles y ciega visores NVG cercanos.",
-  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "para ataques cinéticos de precisión."
+  "item.vision_tactical_eagleeye.drone_payload_he.desc2": "para ataques cinéticos de precisión.",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.linked": "Vinculado: Dron #%s (%s, %s, %s)",
+  "item.vision_tactical_eagleeye.lattice_fpv_controller.unlinked": "[SIN VINCULAR]",
+  "message.vision_tactical_eagleeye.drone_linked": "[LATTICE] Dron #%s vinculado.",
+  "message.vision_tactical_eagleeye.battery_recharged": "[LATTICE] Batería del dron recargada al 100%."
 }
