@@ -106,12 +106,9 @@ public final class EagleEyeHudOverlay {
         if (mc.player == null) {
             return false;
         }
-        if (EagleEyeModuleItem.hasEagleEyeActive(mc.player)) {
-            return true;
-        }
-        boolean holdingController = mc.player.getMainHandItem().getItem() instanceof LatticeControllerItem
-                || mc.player.getOffhandItem().getItem() instanceof LatticeControllerItem;
-        return holdingController && DroneFpvClientController.getActiveDroneCount() > 0;
+        // Strictly require: Vision Goggles ON + eagleeye_datalink_module installed + active owned drone in range
+        return EagleEyeModuleItem.hasEagleEyeActive(mc.player)
+                && DroneFpvClientController.getActiveDroneCount() > 0;
     }
 
     private static void renderInternal(GuiGraphics gui, Minecraft mc, float partialTicks, int width, int height) {

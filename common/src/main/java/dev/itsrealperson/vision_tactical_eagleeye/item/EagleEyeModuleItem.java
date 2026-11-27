@@ -48,9 +48,9 @@ public class EagleEyeModuleItem extends Item {
     }
 
     /**
-     * Returns true if the player's Vision Goggles are switched ON and either the EagleEye
-     * Data-Link module is installed, the player holds a Lattice FPV Controller, or has
-     * an active owned drone nearby.
+     * Returns true ONLY if the player has Vision Goggles equipped &amp; switched ON,
+     * has the {@code eagleeye_datalink_module} installed in those goggles, AND has
+     * at least one active owned drone alive with battery within range.
      */
     public static boolean hasEagleEyeActive(Player player) {
         if (player == null) {
@@ -59,12 +59,8 @@ public class EagleEyeModuleItem extends Item {
         if (!VisionGogglesAPI.isVisionActive(player)) {
             return false;
         }
-        if (VisionGogglesAPI.hasModule(player, MODULE_ID)) {
-            return true;
-        }
-        if (player.getMainHandItem().getItem() instanceof LatticeControllerItem
-                || player.getOffhandItem().getItem() instanceof LatticeControllerItem) {
-            return true;
+        if (!VisionGogglesAPI.hasModule(player, MODULE_ID)) {
+            return false;
         }
         AABB box = player.getBoundingBox().inflate(TacticalDroneEntity.MAX_RANGE);
         List<TacticalDroneEntity> drones = player.level().getEntitiesOfClass(
