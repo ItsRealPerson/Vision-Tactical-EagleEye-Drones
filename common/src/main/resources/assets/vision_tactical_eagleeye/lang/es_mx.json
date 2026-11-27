@@ -43,5 +43,6 @@
   "item.vision_tactical_eagleeye.lattice_fpv_controller.linked": "Vinculado: Dron #%s (%s, %s, %s)",
   "item.vision_tactical_eagleeye.lattice_fpv_controller.unlinked": "[SIN VINCULAR]",
   "message.vision_tactical_eagleeye.drone_linked": "[LATTICE] Dron #%s vinculado.",
-  "message.vision_tactical_eagleeye.battery_recharged": "[LATTICE] Batería del dron recargada al 100%."
+  "message.vision_tactical_eagleeye.battery_recharged": "[LATTICE] Batería del dron recargada al 100%.",
+  "message.vision_tactical_eagleeye.no_drone_linked": "[LATTICE] Ningún dron vinculado. Haz Clic Derecho sobre tu dron con el controlador."
 }

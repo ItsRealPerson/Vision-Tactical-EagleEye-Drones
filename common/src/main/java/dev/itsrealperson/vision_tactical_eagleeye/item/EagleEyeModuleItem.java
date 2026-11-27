@@ -50,7 +50,7 @@ public class EagleEyeModuleItem extends Item {
     /**
      * Returns true ONLY if the player has Vision Goggles equipped &amp; switched ON,
      * has the {@code eagleeye_datalink_module} installed in those goggles, AND has
-     * at least one active owned drone alive with battery within range.
+     * explicitly linked a live owned drone (battery &gt; 0, within range) on their controller.
      */
     public static boolean hasEagleEyeActive(Player player) {
         if (player == null) {
@@ -62,12 +62,16 @@ public class EagleEyeModuleItem extends Item {
         if (!VisionGogglesAPI.hasModule(player, MODULE_ID)) {
             return false;
         }
-        AABB box = player.getBoundingBox().inflate(TacticalDroneEntity.MAX_RANGE);
-        List<TacticalDroneEntity> drones = player.level().getEntitiesOfClass(
-                TacticalDroneEntity.class, box,
-                d -> d.isAlive() && d.isOwnedBy(player) && d.getBattery() > 0.0f
-        );
-        return !drones.isEmpty();
+        int linkedId = LatticeControllerItem.getPlayerLinkedDroneId(player);
+        if (linkedId < 0) {
+            return false;
+        }
+        net.minecraft.world.entity.Entity e = player.level().getEntity(linkedId);
+        return e instanceof TacticalDroneEntity drone
+                && drone.isAlive()
+                && drone.isOwnedBy(player)
+                && drone.getBattery() > 0.0f
+                && drone.distanceTo(player) <= TacticalDroneEntity.MAX_RANGE;
     }
 
     @Override

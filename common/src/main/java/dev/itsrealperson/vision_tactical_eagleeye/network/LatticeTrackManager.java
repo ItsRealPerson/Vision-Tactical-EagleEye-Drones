@@ -106,27 +106,36 @@ public final class LatticeTrackManager {
 
     private static void syncPlayerTelemetry(ServerPlayer player) {
         long now = player.level().getGameTime();
+        int explicitLinkedId = dev.itsrealperson.vision_tactical_eagleeye.item.LatticeControllerItem.getPlayerLinkedDroneId(player);
+
         AABB searchBox = player.getBoundingBox().inflate(TacticalDroneEntity.MAX_RANGE);
         List<TacticalDroneEntity> ownedDrones = player.level().getEntitiesOfClass(
                 TacticalDroneEntity.class, searchBox,
                 d -> d.isAlive() && d.isOwnedBy(player)
+                        && (d.isFpvLinked() || (explicitLinkedId >= 0 && d.getId() == explicitLinkedId))
         );
 
         Map<Integer, TimedTrack> trackMap = PLAYER_TRACKS.get(player.getUUID());
-        if (ownedDrones.isEmpty() && (trackMap == null || trackMap.isEmpty())) {
+        if (ownedDrones.isEmpty()) {
+            if (trackMap != null && !trackMap.isEmpty()) {
+                PLAYER_TRACKS.remove(player.getUUID());
+                ModNetworking.sendLatticeTracksPacket(player, LatticeTelemetrySnapshot.EMPTY);
+            }
             return;
+        }
+
+        java.util.Set<Integer> allowedDroneIds = new java.util.HashSet<>(ownedDrones.size());
+        for (TacticalDroneEntity d : ownedDrones) {
+            allowedDroneIds.add(d.getId());
         }
 
         List<LatticeTrackEntry> activeTracks = new ArrayList<>();
         if (trackMap != null) {
             trackMap.entrySet().removeIf(e -> e.getValue().expireGameTick() <= now);
             for (TimedTrack timed : trackMap.values()) {
-                activeTracks.add(timed.entry());
-            }
-            if (trackMap.isEmpty() && ownedDrones.isEmpty()) {
-                PLAYER_TRACKS.remove(player.getUUID());
-                ModNetworking.sendLatticeTracksPacket(player, LatticeTelemetrySnapshot.EMPTY);
-                return;
+                if (allowedDroneIds.contains(timed.entry().droneId())) {
+                    activeTracks.add(timed.entry());
+                }
             }
         }
 

@@ -11,11 +11,15 @@
     "client.FpvGameRendererMixin",
     "client.FpvGuiMixin",
     "client.FpvInventoryMixin",
+    "client.FpvLocalPlayerMixin",
+    "client.FpvVisionHudSuppressMixin",
+    "client.FpvVisionRendererSuppressMixin",
     "client.FpvVisionShaderSuppressMixin",
     "client.GameRendererAccessor",
     "client.KeyboardInputFpvMixin",
     "client.LocalPlayerTurnMixin",
-    "client.MinecraftCameraMixin"
+    "client.MinecraftCameraMixin",
+    "client.PostChainAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

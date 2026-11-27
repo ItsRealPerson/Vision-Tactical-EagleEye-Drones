@@ -124,15 +124,22 @@ public final class EagleEyeHudOverlay {
     // =========================================================================
 
     private static void renderOperatorArHud(GuiGraphics gui, Minecraft mc, float partialTicks, int width, int height) {
+        int linkedId = LatticeControllerItem.getPlayerLinkedDroneId(mc.player);
+        if (linkedId < 0) {
+            return;
+        }
         Font font = mc.font;
         int droneCount = DroneFpvClientController.getActiveDroneCount();
         int batPct = Math.round(DroneFpvClientController.getPrimaryBatteryPct() * 100.0f);
         String modeStr = DroneFpvClientController.isPrimaryAutoHover() ? "AUTO-HOVER" : "MANUAL";
-        List<LatticeTrackEntry> tracks = DroneFpvClientController.getTracks();
+        List<LatticeTrackEntry> allTracks = DroneFpvClientController.getTracks();
+        List<LatticeTrackEntry> tracks = allTracks.stream()
+                .filter(t -> t.droneId() == linkedId || t.entityId() == linkedId)
+                .toList();
 
         String topBar = String.format(
-                "[LATTICE OS // DATA-LINK ACTIVE] | UAVs: %d | BAT: %d%% | MODE: %s | TRACKS: %d",
-                droneCount, batPct, modeStr, tracks.size()
+                "[LATTICE OS // DATA-LINK ACTIVE] | UAV #%d | BAT: %d%% | MODE: %s | TRACKS: %d",
+                linkedId, batPct, modeStr, tracks.size()
         );
         int barW = font.width(topBar) + 16;
         int barX = (width - barW) / 2;
@@ -157,10 +164,7 @@ public final class EagleEyeHudOverlay {
         int cx = width / 2;
         int cy = height / 2;
 
-        // 0. Military EO/UAV Camera Optical Finish (cool slate-blue wash + subtle scanlines + optical edge vignette, distinct from green NVG)
-        renderDroneEoCameraOptics(gui, width, height);
-
-        // 1. AR Lattice boxes over tracked entities in drone FOV
+        // 1. AR Lattice boxes over tracked entities in drone FOV (GLSL uav_eo PostChain already applied to world)
         renderProjectedTracks(gui, mc, DroneFpvClientController.getTracks(), partialTicks, width, height, false);
 
         // 2. Top Compass Tape

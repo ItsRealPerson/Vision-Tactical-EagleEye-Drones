@@ -40,6 +40,32 @@ public class LatticeControllerItem extends Item {
         return stack != null && !stack.isEmpty() && stack.hasTag() && stack.getTag().contains(TAG_LINKED_ID);
     }
 
+    public static int getLinkedDroneId(ItemStack stack) {
+        return hasLinkedDrone(stack) ? stack.getTag().getInt(TAG_LINKED_ID) : -1;
+    }
+
+    public static int getPlayerLinkedDroneId(@Nullable Player player) {
+        if (player == null) {
+            return -1;
+        }
+        ItemStack main = player.getMainHandItem();
+        if (main.getItem() instanceof LatticeControllerItem && hasLinkedDrone(main)) {
+            return getLinkedDroneId(main);
+        }
+        ItemStack off = player.getOffhandItem();
+        if (off.getItem() instanceof LatticeControllerItem && hasLinkedDrone(off)) {
+            return getLinkedDroneId(off);
+        }
+        Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.getItem() instanceof LatticeControllerItem && hasLinkedDrone(s)) {
+                return getLinkedDroneId(s);
+            }
+        }
+        return -1;
+    }
+
     public static void setLinkedDrone(ItemStack stack, TacticalDroneEntity drone) {
         if (stack == null || stack.isEmpty() || drone == null) {
             return;
@@ -110,27 +136,28 @@ public class LatticeControllerItem extends Item {
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
 
-        AABB searchBox = player.getBoundingBox().inflate(TacticalDroneEntity.MAX_RANGE);
-        List<TacticalDroneEntity> ownedDrones = level.getEntitiesOfClass(
-                TacticalDroneEntity.class, searchBox,
-                d -> d.isAlive() && d.isOwnedBy(player)
-        );
+        int linkedId = getLinkedDroneId(stack);
+        if (linkedId < 0) {
+            serverPlayer.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.no_drone_linked")
+                    .withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.fail(stack);
+        }
 
-        if (ownedDrones.isEmpty()) {
+        net.minecraft.world.entity.Entity entity = level.getEntity(linkedId);
+        if (!(entity instanceof TacticalDroneEntity target)
+                || !target.isAlive()
+                || !target.isOwnedBy(player)
+                || target.distanceTo(player) > TacticalDroneEntity.MAX_RANGE) {
             clearLinkedDrone(stack);
             serverPlayer.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.no_drone_in_range")
                     .withStyle(ChatFormatting.RED), true);
             return InteractionResultHolder.fail(stack);
         }
 
-        ownedDrones.sort(Comparator.comparingDouble(d -> d.distanceToSqr(player)));
-
         if (player.isShiftKeyDown()) {
-            boolean anyHover = ownedDrones.stream().anyMatch(TacticalDroneEntity::isAutoHover);
-            boolean nextState = !anyHover;
-            for (TacticalDroneEntity drone : ownedDrones) {
-                drone.setAutoHover(nextState);
-            }
+            boolean nextState = !target.isAutoHover();
+            target.setAutoHover(nextState);
+            setLinkedDrone(stack, target);
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     ModSounds.LATTICE_LINK.get(), SoundSource.PLAYERS, 0.7f, nextState ? 1.2f : 0.85f);
             serverPlayer.displayClientMessage(Component.translatable(nextState
@@ -140,42 +167,19 @@ public class LatticeControllerItem extends Item {
             return InteractionResultHolder.success(stack);
         }
 
-        // Pick next available drone with battery > 0 (cycle if already linked)
-        TacticalDroneEntity currentLinked = null;
-        int currentIdx = -1;
-        for (int i = 0; i < ownedDrones.size(); i++) {
-            if (ownedDrones.get(i).isFpvLinked()) {
-                currentLinked = ownedDrones.get(i);
-                currentIdx = i;
-                break;
-            }
-        }
-
-        TacticalDroneEntity target = null;
-        for (int offset = 1; offset <= ownedDrones.size(); offset++) {
-            TacticalDroneEntity candidate = ownedDrones.get((currentIdx + offset) % ownedDrones.size());
-            if (candidate.getBattery() > 0.0f) {
-                target = candidate;
-                break;
-            }
-        }
-
-        if (target == null) {
+        if (target.getBattery() <= 0.0f) {
             serverPlayer.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.no_drone_in_range")
                     .withStyle(ChatFormatting.RED), true);
             return InteractionResultHolder.fail(stack);
         }
 
-        if (currentLinked != null && currentLinked != target) {
-            currentLinked.setFpvLinked(false);
-        }
         setLinkedDrone(stack, target);
         target.setFpvLinked(true);
         ModNetworking.sendFpvLinkPacket(serverPlayer, target.getId(), true, 0.0f);
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 ModSounds.LATTICE_LINK.get(), SoundSource.PLAYERS, 0.8f, 1.15f);
-        serverPlayer.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.drone_linked", target.getId())
-                .withStyle(ChatFormatting.GREEN), true);
+        serverPlayer.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.fpv_linked")
+                .withStyle(ChatFormatting.AQUA), true);
 
         return InteractionResultHolder.success(stack);
     }

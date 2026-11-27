@@ -13,6 +13,11 @@
   - Añadido estado NBT de vinculación en `LatticeControllerItem` (`isFoil`, tooltip verde `Vinculado: Dron #<id> (X, Y, Z)` o rojo `[SIN VINCULAR]` y mensaje `[LATTICE] Dron #<id> vinculado`).
   - Reducido el TTL de objetivos a `10` ticks (`0.5s`) con poda inmediata al perder línea de visión (`5` ticks de escaneo/sync) y proyección 3D→2D exacta con relación de aspecto GUI y `getPosition(partialTicks)`.
   - Añadido `FpvVisionShaderSuppressMixin` para suprimir el shader verde NVG durante el modo FPV y renderizar la cámara militar EO/UAV propia (tinte azul-pizarra frío, scanlines sutiles, viñeta óptica y retícula EO cian).
+- **Aislamiento Total FPV, PostChain GLSL `uav_eo`, Vinculación Explícita y Cuerpo Quieto (#181):**
+  - Añadidos `FpvVisionHudSuppressMixin` y `FpvVisionRendererSuppressMixin` para ocultar al 100% el HUD de `Vision Goggles` (batería/modo/biometría), suprimir el lightmap NVG y bloquear la tecla `N`/rueda radial/zoom mientras se pilota en FPV.
+  - Creado PostChain GLSL dedicado `shaders/post/uav_eo.json` + `program/uav_eo.{json,fsh}` (`DroneEoShaderManager`, `PostChainAccessor`) con estética militar EO/UAV (desaturación fría azul-pizarra de alto contraste, realce nocturno propio, grano CMOS, scanlines y RF glitch dinámico).
+  - Eliminada la auto-vinculación al colocar el dron (`TacticalDroneItem`): ahora se vincula explícitamente con Clic Derecho sobre el dron usando el controlador, y tanto `LatticeTrackManager` como `EagleEyeHudOverlay` muestran únicamente objetivos del dron vinculado.
+  - Añadido `FpvLocalPlayerMixin` para congelar el cuerpo y la cabeza del operador (`aiStep`, `setSprinting`, velocidad horizontal `0`) mientras pilota en FPV.
 
 ## [1.0.0] - 2026-11-26
 ### Added

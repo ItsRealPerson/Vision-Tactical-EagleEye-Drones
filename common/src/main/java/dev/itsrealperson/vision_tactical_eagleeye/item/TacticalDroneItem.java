@@ -131,7 +131,6 @@ public class TacticalDroneItem extends Item implements GeoItem {
         drone.setPayloadType(getPayloadType(stack));
         drone.setAutoHover(true);
         level.addFreshEntity(drone);
-        LatticeControllerItem.linkControllerInInventory(player, drone);
 
         level.playSound(null, spawnPos.x, spawnPos.y, spawnPos.z,
                 ModSounds.DRONE_DEPLOY.get(), SoundSource.PLAYERS, 0.85f, 1.1f);
