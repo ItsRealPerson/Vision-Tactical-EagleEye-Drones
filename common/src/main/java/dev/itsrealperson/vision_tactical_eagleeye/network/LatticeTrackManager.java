@@ -106,13 +106,13 @@ public final class LatticeTrackManager {
 
     private static void syncPlayerTelemetry(ServerPlayer player) {
         long now = player.level().getGameTime();
-        int explicitLinkedId = dev.itsrealperson.vision_tactical_eagleeye.item.LatticeControllerItem.getPlayerLinkedDroneId(player);
+        UUID explicitLinkedUuid = dev.itsrealperson.vision_tactical_eagleeye.item.LatticeControllerItem.getPlayerLinkedDroneUUID(player);
 
         AABB searchBox = player.getBoundingBox().inflate(TacticalDroneEntity.MAX_RANGE);
         List<TacticalDroneEntity> ownedDrones = player.level().getEntitiesOfClass(
                 TacticalDroneEntity.class, searchBox,
                 d -> d.isAlive() && d.isOwnedBy(player)
-                        && (d.isFpvLinked() || (explicitLinkedId >= 0 && d.getId() == explicitLinkedId))
+                        && (d.isFpvLinked() || (explicitLinkedUuid != null && explicitLinkedUuid.equals(d.getUUID())))
         );
 
         Map<Integer, TimedTrack> trackMap = PLAYER_TRACKS.get(player.getUUID());

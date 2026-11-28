@@ -301,6 +301,23 @@ public final class DroneFpvClientController {
         return entity instanceof TacticalDroneEntity drone ? drone : null;
     }
 
+    @Nullable
+    public static TacticalDroneEntity findDroneByUuid(@Nullable java.util.UUID uuid) {
+        if (uuid == null) {
+            return null;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            return null;
+        }
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (entity instanceof TacticalDroneEntity drone && uuid.equals(drone.getUUID())) {
+                return drone;
+            }
+        }
+        return null;
+    }
+
     public static boolean isFpvActive() {
         return linkedInFpv && activeDroneId >= 0;
     }

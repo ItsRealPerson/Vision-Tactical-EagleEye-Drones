@@ -449,9 +449,6 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
             List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class, scanBox,
                     e -> e.isAlive() && e != this && (operator == null || !e.getUUID().equals(operator.getUUID())));
 
-            for (LivingEntity target : targets) {
-                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 300, 0, false, false));
-            }
             ServerPlayer owner = operator != null ? operator
                     : (getOwnerPlayer() instanceof ServerPlayer sp ? sp : null);
             if (owner != null) {
@@ -471,7 +468,6 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
                 if (entity instanceof Enemy || (entity instanceof Player p && !isOwnedBy(p))) {
                     entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 3));
                     entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 120, 1));
-                    entity.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0));
                 }
                 if (entity instanceof ServerPlayer nearbyPlayer) {
                     ModNetworking.sendEmpFlash(nearbyPlayer, 1.5f);
@@ -509,7 +505,7 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
                     setFpvLinked(false);
                     ModNetworking.sendFpvLinkPacket(sp, this.getId(), false, 0.0f);
                 }
-                LatticeControllerItem.clearLinkedDroneInInventory(player, this.getId());
+                LatticeControllerItem.clearLinkedDroneInInventory(player, this.getUUID());
                 ItemStack packed = new ItemStack(ModItems.TACTICAL_DRONE.get());
                 TacticalDroneItem.setBattery(packed, getBattery());
                 TacticalDroneItem.setPayloadType(packed, getPayloadType());
@@ -545,7 +541,7 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
                 LatticeControllerItem.setLinkedDrone(held, this);
                 this.level().playSound(null, getX(), getY(), getZ(),
                         ModSounds.LATTICE_LINK.get(), SoundSource.PLAYERS, 0.85f, 1.2f);
-                player.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.drone_linked", this.getId())
+                player.displayClientMessage(Component.translatable("message.vision_tactical_eagleeye.drone_linked", LatticeControllerItem.formatShortId(this.getUUID()))
                         .withStyle(ChatFormatting.GREEN), true);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -587,7 +583,7 @@ public class TacticalDroneEntity extends PathfinderMob implements GeoEntity {
     public void die(DamageSource damageSource) {
         if (!this.level().isClientSide) {
             Player owner = getOwnerPlayer();
-            LatticeControllerItem.clearLinkedDroneInInventory(owner, this.getId());
+            LatticeControllerItem.clearLinkedDroneInInventory(owner, this.getUUID());
             if (isFpvLinked() && owner instanceof ServerPlayer sp) {
                 setFpvLinked(false);
                 ModNetworking.sendFpvLinkPacket(sp, this.getId(), false, 0.0f);

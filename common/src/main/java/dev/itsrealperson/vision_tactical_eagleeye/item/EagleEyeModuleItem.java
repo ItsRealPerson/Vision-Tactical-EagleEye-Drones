@@ -62,14 +62,12 @@ public class EagleEyeModuleItem extends Item {
         if (!VisionGogglesAPI.hasModule(player, MODULE_ID)) {
             return false;
         }
-        int linkedId = LatticeControllerItem.getPlayerLinkedDroneId(player);
-        if (linkedId < 0) {
+        java.util.UUID linkedUuid = LatticeControllerItem.getPlayerLinkedDroneUUID(player);
+        if (linkedUuid == null) {
             return false;
         }
-        net.minecraft.world.entity.Entity e = player.level().getEntity(linkedId);
-        return e instanceof TacticalDroneEntity drone
-                && drone.isAlive()
-                && drone.isOwnedBy(player)
+        TacticalDroneEntity drone = LatticeControllerItem.resolveLinkedDrone(player.level(), linkedUuid, player);
+        return drone != null
                 && drone.getBattery() > 0.0f
                 && drone.distanceTo(player) <= TacticalDroneEntity.MAX_RANGE;
     }

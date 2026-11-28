@@ -28,6 +28,9 @@
   - `TacticalDroneEntity#lerpTo` y `DroneFpvClientController#handleMouseTurn` mantienen la rotación FPV 100% autoritativa en cliente (y directa en servidor sin `rotLerp(0.45f)`), eliminando el snap-back/movimiento raro al girar el dron.
   - Eliminados `[THERM]` y `[OPTIC]` de `EagleEyeHudOverlay` (etiqueta limpia `X.Xm | HP%`) y conectada la proyección directamente a `VisionHUDOverlay.projectWorldToGui` con `mc.getFrameTime()` para 0 desfase al caminar/moverse con el jugador.
 - **Compensación de Ojo de Pez NVG/Térmico solo en Modo Operador (`EagleEyeHudOverlay` #198):** En modo operador delega a `VisionHUDOverlay.projectWorldToGui` (con inversión exacta de barril `0.45·r² + 0.82`); en modo FPV del dron mantiene proyección lineal pura acorde a `uav_eo.fsh`.
+- **Vinculación Persistente por UUID al Recargar Mundo y Eliminación de `MobEffects.GLOWING` (#203):**
+  - Reemplazado `LinkedDroneId` (ID numérico volátil) por `LinkedDroneUUID` persistente en `LatticeControllerItem`, `TacticalDroneEntity`, `EagleEyeModuleItem`, `LatticeTrackManager`, `DroneFpvClientController` y `EagleEyeHudOverlay` para que el enlace dron↔control↔gafas sobreviva cerrar y reabrir el mundo.
+  - Eliminado `MobEffects.GLOWING` del Pulso Recon (`G`) y EMP en `TacticalDroneEntity#triggerPayload`, evitando siluetas blancas vanilla sin distorsión de barril sobre la viñeta NVG y el desfase visual respecto a los corchetes AR.
 
 ## [1.0.0] - 2026-11-26
 ### Added

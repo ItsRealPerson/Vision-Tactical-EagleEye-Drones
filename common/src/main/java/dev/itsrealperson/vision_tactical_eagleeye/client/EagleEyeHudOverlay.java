@@ -124,12 +124,13 @@ public final class EagleEyeHudOverlay {
     // =========================================================================
 
     private static void renderOperatorArHud(GuiGraphics gui, Minecraft mc, float partialTicks, int width, int height) {
-        int linkedId = LatticeControllerItem.getPlayerLinkedDroneId(mc.player);
-        if (linkedId < 0) {
+        java.util.UUID linkedUuid = LatticeControllerItem.getPlayerLinkedDroneUUID(mc.player);
+        TacticalDroneEntity linkedDrone = DroneFpvClientController.findDroneByUuid(linkedUuid);
+        if (linkedUuid == null || linkedDrone == null || !linkedDrone.isAlive()) {
             return;
         }
+        int linkedId = linkedDrone.getId();
         Font font = mc.font;
-        int droneCount = DroneFpvClientController.getActiveDroneCount();
         int batPct = Math.round(DroneFpvClientController.getPrimaryBatteryPct() * 100.0f);
         String modeStr = DroneFpvClientController.isPrimaryAutoHover() ? "AUTO-HOVER" : "MANUAL";
         List<LatticeTrackEntry> allTracks = DroneFpvClientController.getTracks();
@@ -138,8 +139,8 @@ public final class EagleEyeHudOverlay {
                 .toList();
 
         String topBar = String.format(
-                "[LATTICE OS // DATA-LINK ACTIVE] | UAV #%d | BAT: %d%% | MODE: %s | TRACKS: %d",
-                linkedId, batPct, modeStr, tracks.size()
+                "[LATTICE OS // DATA-LINK ACTIVE] | UAV #%s | BAT: %d%% | MODE: %s | TRACKS: %d",
+                LatticeControllerItem.formatShortId(linkedUuid), batPct, modeStr, tracks.size()
         );
         int barW = font.width(topBar) + 16;
         int barX = (width - barW) / 2;
